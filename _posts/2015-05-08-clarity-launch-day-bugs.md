@@ -1,7 +1,7 @@
 ---
 layout: post-no-feature
-title: "Clarity launch day 'Rendering' bug"
-description: "The one where all the keys were bunched up in the top left hand corner..."
+title: "Clarity launch day bugs"
+description: "Why the keyboard wouldn't load on Samsung phones and wouldn't render for Polish people!"
 category: articles
 comments: true
 tags: [clojure, webview, clarity, programming]
@@ -9,15 +9,13 @@ tags: [clojure, webview, clarity, programming]
 
 ## Context
 
-As this is my first post on the subject, a little context about **Clarity** [(Google Play)](https://play.google.com/store/apps/details?id=com.swiftkey.clarity.keyboard&referrer=utm_source%3Dadamblog%26utm_medium%3Dblog%26utm_content%3Dprogrammingpost): It's a new keyboard brought out by SwiftKey (my employer) as part of our [Greenhouse](http://swiftkey.com/en/greenhouse/) initiative to get internal experiments out in the world and in people's hands. I'm the tech lead (and [Ben Leavett](http://benleavett.github.io/) is the Product Manager). It's pretty exciting tech for a number of reasons - like for example the fact that it is written using [Clojure](clojure.org).
+This post refers to [Clarity Keyboard](https://play.google.com/store/apps/details?id=com.swiftkey.clarity.keyboard&referrer=utm_source%3Dadamblog%26utm_medium%3Dblog%26utm_content%3Dprogrammingpost), for a more general overview of that project and its tech, see the previous blog post [here](/articles/clarity-keyboard-uses-clojure/).
 
-<img src="/images/clarity-icon.png" alt="Clarity logo"/>
-
-The first release was on Monday, and as could be expected the first time it's run on a wide range of different devices and in different situations to those found in the office, there were a few (pretty major) bugs that turned up.
+The first release was last week, and as could be expected the first time it's run on a wide range of different devices and in different situations to those found in the office, there were a few (pretty major) bugs that turned up.
 
 ## Ugh, Classloaders
 
-One was an issue with the WebView that we use to render the keyboard - on Samsung and a few other devices, loading the WebView would destroy the classloader for a thread (!?). This resulted in `ClassNotFound` exceptions for anything which tried to load on the same thread in the future - understandable given that it was *looking in the wrong APK*. I believe this is a bug in some implementations of the WebView, and there's nothing we can do about it other than restore the ClassLoader to what it should have been after initialising the WebView.
+The biggest bug was an issue with the WebView that we use to render the keyboard. On Samsung and a few other devices, loading the WebView would destroy the classloader for a thread (!?). This resulted in `ClassNotFound` exceptions for anything which tried to load on the same thread in the future - understandable given that it was **looking in the wrong APK**. I believe this is a bug in some implementations of the WebView, and there's nothing we can do about it other than save the ClassLoader and then manually restore it immediately after initialising the WebView.
 
 ## The unreproducible rendering bug
 
@@ -33,5 +31,5 @@ It turns out that in some programmatically generated styles, a too-clever-for-it
 
 A minor tweak to the formatting method and this one was fixed for everyone. A valuable demonstration that no matter how much testing you do on your own devices, you can never know what's going to go wrong until you've put it out in the world! But that's what releasing this Beta (and the Greenhouse initiative) is all about!
 
-Oh, and if you haven't already downloaded it, go and install Clarity (now with fewer bugs)
+Oh, and if you haven't already downloaded it, go and [install Clarity](https://play.google.com/store/apps/details?id=com.swiftkey.clarity.keyboard&referrer=utm_source%3Dadamblog%26utm_medium%3Dblog%26utm_content%3Dprogrammingpost) (now with fewer bugs)
 
