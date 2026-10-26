@@ -192,7 +192,7 @@
 <script src="faces.js"></script>
 <script>
 'use strict';
-const APP_VERSION = '1.7.3'; // set by android/build-apk.sh
+const APP_VERSION = '1.7.4'; // set by android/build-apk.sh
 if (new URLSearchParams(location.search).has('app')) document.documentElement.classList.add('in-app');
 
 // ---------- Cards ----------
@@ -549,29 +549,36 @@ function buildDom() {
 
 function layout() {
   const bw = board.clientWidth, bh = board.clientHeight;
-  const W = Math.min(bw, 640);
-  const gap = Math.max(2, W * 0.005);
-  const cw = (W - gap * 9) / 8;
+  // A phone uses the whole width; a wide screen (the website) gets a table
+  // with room around it and between the cards.
+  const wide = bw >= 700;
+  const W = wide ? Math.min(bw - 64, 860, bh * 1.15) : Math.min(bw, 640);
+  const gap = wide ? W * 0.018 : Math.max(2, W * 0.005);
+  // The top row has a gap between the free cells and the foundations.
+  const mid = W * (wide ? 0.05 : 0.04);
+  const cw = (W - gap * 9 - mid) / 8;
   const ch = cw * 1.45;
   const left = (bw - W) / 2 + gap;
-  const topY = gap * 2;
-  const tabY = topY + ch + gap * 4;
+  const topY = wide ? gap * 2 + 8 : gap * 2;
+  const tabY = topY + ch + gap * (wide ? 2.5 : 4);
   // Just the top line of a covered card shows (the pip and picture start below it).
-  L = { gap, cw, ch, left, topY, tabY, bh, fan: ch * 0.4 };
+  L = { gap, cw, ch, left, topY, tabY, bh, mid, fan: ch * 0.4 };
   for (const el of cardEls) {
     el.style.width = cw + 'px'; el.style.height = ch + 'px';
     el.style.fontSize = (cw * 0.48) + 'px';
   }
   slotEls.forEach((el, i) => {
     el.style.width = cw + 'px'; el.style.height = ch + 'px';
-    el.style.left = colX(i % 8) + 'px';
+    el.style.left = (i < 8 ? topX(i) : colX(i - 8)) + 'px';
     el.style.top = (i < 8 ? topY : tabY) + 'px';
   });
   document.getElementById('again').style.top = (tabY + ch * 1.5) + 'px';
   clearHint();
   render();
 }
-const colX = i => L.left + i * (L.cw + L.gap);
+// Columns spread evenly across the table; the top row keeps its middle gap.
+const colX = i => L.left + i * (L.cw + L.gap + L.mid / 7);
+const topX = i => L.left + i * (L.cw + L.gap) + (i >= 4 ? L.mid : 0);
 
 function fanFor(n) {
   if (n <= 1) return L.fan;
@@ -582,8 +589,8 @@ function fanFor(n) {
 let pos = []; // pos[card] = {x,y,z}
 function render() {
   pos = [];
-  S.cells.forEach((c, i) => { if (c !== null) pos[c] = { x: colX(i), y: L.topY, z: 1 }; });
-  S.found.forEach((f, s) => f.forEach((c, k) => { pos[c] = { x: colX(4 + s), y: L.topY, z: 1 + k }; }));
+  S.cells.forEach((c, i) => { if (c !== null) pos[c] = { x: topX(i), y: L.topY, z: 1 }; });
+  S.found.forEach((f, s) => f.forEach((c, k) => { pos[c] = { x: topX(4 + s), y: L.topY, z: 1 + k }; }));
   S.cols.forEach((col, i) => {
     const fan = fanFor(col.length);
     col.forEach((c, k) => { pos[c] = { x: colX(i), y: L.tabY + k * fan, z: 10 + k }; });
@@ -594,13 +601,16 @@ function render() {
     const delay = autoDelay[c] ? autoDelay[c] * 70 : 0;
     const t = `translate(${p.x}px, ${p.y}px)`;
     el.style.transitionDelay = delay + 'ms';
-    clearTimeout(el._landT);
     if (dealRun && dealRun.flying.has(c)) continue; // the deal places it
-    if (el.style.transform && el.style.transform !== t) {
-      // A moving card flies above every other until it lands.
+    // The rule for every move: a card in flight is above every card at rest,
+    // until it has landed, however many times the table is drawn meanwhile.
+    const now = performance.now();
+    if (el.style.transform && el.style.transform !== t) el._landAt = Math.max(el._landAt || 0, now + delay + 200);
+    if ((el._landAt || 0) > now) {
       el.style.zIndex = 700 + p.z + (autoDelay[c] || 0);
-      el._landT = setTimeout(() => { el.style.zIndex = p.z; }, delay + 200);
-    } else el.style.zIndex = p.z;
+      clearTimeout(el._landT);
+      el._landT = setTimeout(() => { el.style.zIndex = pos[c].z; el._landAt = 0; }, el._landAt - now);
+    } else if (!el.classList.contains('dragging')) el.style.zIndex = p.z;
     el.style.transform = t;
   }
   autoDelay = [];
@@ -626,8 +636,8 @@ function showHint(h, animate) {
   const box = (el, x, y, w, hgt) => Object.assign(el.style, { display: 'block', left: x + 'px', top: y + 'px', width: w + 'px', height: hgt + 'px' });
   box(document.getElementById('hintSrc'), a.x, a.y, L.cw, b.y - a.y + L.ch);
   let x, y;
-  if (h.dst.t === 'found') { x = colX(4 + suit(cards[0])); y = L.topY; }
-  else if (h.dst.t === 'cell') { x = colX(h.dst.i); y = L.topY; }
+  if (h.dst.t === 'found') { x = topX(4 + suit(cards[0])); y = L.topY; }
+  else if (h.dst.t === 'cell') { x = topX(h.dst.i); y = L.topY; }
   else {
     const col = S.cols[h.dst.i];
     x = colX(h.dst.i); y = col.length ? pos[col[col.length - 1]].y : L.tabY;
@@ -666,10 +676,13 @@ function locate(c) {
   return null; // on a foundation
 }
 
+// The nearest slot to a point (generous: drops between slots still land).
 function dropTarget(x, y) {
-  const i = Math.floor((x - L.left + L.gap / 2) / (L.cw + L.gap));
-  if (i < 0 || i > 7) return null;
-  if (y < L.tabY - L.gap) return i < 4 ? { t: 'cell', i } : { t: 'found' };
+  const top = y < L.tabY - L.gap, xs = [0, 1, 2, 3, 4, 5, 6, 7].map(top ? topX : colX);
+  let i = 0;
+  xs.forEach((cx, k) => { if (Math.abs(x - cx - L.cw / 2) < Math.abs(x - xs[i] - L.cw / 2)) i = k; });
+  if (Math.abs(x - xs[i] - L.cw / 2) > L.cw) return null;
+  if (top) return i < 4 ? { t: 'cell', i } : { t: 'found' };
   return { t: 'col', i };
 }
 
@@ -702,7 +715,7 @@ board.addEventListener('pointermove', e => {
   if (!drag.moved && Math.hypot(dx, dy) < 8) return;
   if (!drag.moved) {
     drag.moved = true;
-    drag.els.forEach((el, k) => { el.classList.add('dragging'); el.style.zIndex = 500 + k; });
+    drag.els.forEach((el, k) => { el.classList.add('dragging'); el.style.zIndex = 3000 + k; });
   }
   drag.cards.forEach((c, k) => {
     const p = pos[c];
