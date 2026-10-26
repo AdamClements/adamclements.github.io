@@ -1,0 +1,1030 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0f5132">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>FreeCell</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<style>
+  :root {
+    --felt: #0f5132;
+    --felt-dark: #0a3d26;
+    --bar: rgba(0,0,0,.28);
+    --slot: rgba(255,255,255,.30);
+      --red: #c8102e;
+    --black: #1a1a1a;
+    --gold: #ffd54a;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; height: 100%; overflow: hidden;
+    overscroll-behavior: none;
+    background: radial-gradient(ellipse at 50% 30%, #157347 0%, var(--felt) 55%, var(--felt-dark) 100%);
+    background-color: var(--felt);
+    color: #fff;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    user-select: none; -webkit-user-select: none;
+    touch-action: none;
+  }
+  #app { position: fixed; inset: 0; display: flex; flex-direction: column; }
+  header {
+    display: flex; align-items: center;
+    padding: calc(env(safe-area-inset-top) + 6px) 6px 6px;
+    background: var(--bar); font-variant-numeric: tabular-nums;
+  }
+  /* Equal columns, so a wider number never shifts its neighbours. */
+  header .stat { flex: 1 1 0; display: flex; flex-direction: column; align-items: center; min-width: 0; }
+  header .stat small { font-size: 11px; opacity: .75; text-transform: uppercase; letter-spacing: .05em; }
+  header .stat b { font-size: 17px; font-weight: 600; line-height: 22px; }
+  header #gameNo { font-size: 14px; font-weight: 500; opacity: .8; }
+  #board { position: relative; flex: 1; overflow: hidden; }
+  footer {
+    display: flex; justify-content: space-around;
+    padding: 6px 4px calc(env(safe-area-inset-bottom) + 6px);
+    background: var(--bar);
+  }
+  footer button {
+    flex: 1; margin: 0 4px; padding: 8px 0 6px;
+    background: rgba(255,255,255,.1); color: #fff; border: 0; border-radius: 10px;
+    font: inherit; font-size: 12px; display: flex; flex-direction: column; align-items: center; gap: 3px;
+  }
+  footer svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  footer button:active { background: rgba(255,255,255,.25); }
+  footer button:disabled { opacity: .4; }
+
+  .slot {
+    position: absolute; border-radius: 6px;
+    border: 1.5px solid var(--slot); background: rgba(0,0,0,.12);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff;
+  }
+  .slot svg { width: 50%; height: 50%; fill: currentColor; opacity: .38; }
+  .card {
+    position: absolute; left: 0; top: 0;
+    border-radius: 4px; background: #fdfdfb;
+    box-shadow: 0 1px 2px rgba(0,0,0,.45);
+    border: 1px solid #aaa;
+    transition: transform .18s ease-out;
+    /* Each card keeps its own layer: promoting and dropping layers as cards
+       start and stop moving can flash on some phones. */
+    will-change: transform;
+    backface-visibility: hidden;
+    overflow: hidden;
+  }
+  .card.red { color: var(--red); }
+  .card.black { color: var(--black); }
+  .card svg { fill: currentColor; }
+  /* The line that shows when cards overlap: rank on the left, suit on the right
+     (the card's font-size is set from its width in layout()). */
+  .card .top {
+    position: absolute; left: 5%; right: 5%; top: .08em; height: 1em;
+    display: flex; align-items: center; justify-content: space-between;
+    font-weight: 700; line-height: 1; white-space: nowrap;
+  }
+  .card .top b { font-weight: 700; letter-spacing: -.02em; }
+  .card .top b.ten { font-size: .9em; letter-spacing: -.08em; margin-left: -.04em; }
+  .card .top svg { width: .68em; height: .68em; flex: none; }
+  .card .big {
+    position: absolute; left: 0; right: 0; top: 1.3em; bottom: .1em;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .card .big svg { width: 58%; aspect-ratio: 1; display: block; }
+  /* Court pictures run to the card's edges below the top line. */
+  .card .face {
+    position: absolute; left: 0; right: 0; top: 1.3em; bottom: 0;
+    background: center top / cover no-repeat;
+  }
+  #board.waiting .card { visibility: hidden; }
+  .card.dragging { transition: none; box-shadow: 0 6px 14px rgba(0,0,0,.5); }
+  .card.shake { animation: shake .7s ease-out; }
+  /* A red edge while it wiggles, fading out once the wiggle is done. */
+  @keyframes shake {
+    0%, 52% { box-shadow: 0 0 0 2px rgba(200,16,46,.75), 0 1px 2px rgba(0,0,0,.45); }
+    100% { box-shadow: 0 0 0 2px rgba(200,16,46,0), 0 1px 2px rgba(0,0,0,.45); }
+    0%, 52%, 100% { margin-left: 0 } 10% { margin-left: -6px } 20% { margin-left: 6px }
+    30% { margin-left: -6px } 40% { margin-left: 6px } 46% { margin-left: -3px }
+  }
+  .hint-box {
+    position: absolute; z-index: 400; pointer-events: none; display: none;
+    border-radius: 8px;
+  }
+  #hintSrc { box-shadow: 0 0 0 3px var(--gold), 0 0 12px rgba(255,213,74,.6); }
+  #hintDst { outline: 3px dashed var(--gold); outline-offset: 1px; }
+  #again {
+    position: absolute; left: 50%; transform: translateX(-50%); z-index: 300; display: none;
+    padding: 0 28px; height: 48px; border: 0; border-radius: 12px;
+    background: #fff; color: var(--felt); font: inherit; font-size: 17px; font-weight: 600;
+    box-shadow: 0 2px 8px rgba(0,0,0,.35);
+  }
+
+  #modal {
+    position: fixed; inset: 0; display: none; align-items: center; justify-content: center;
+    background: rgba(0,0,0,.55); z-index: 1000; padding: 16px;
+  }
+  #modal.open { display: flex; }
+  #modal .box {
+    background: #fff; color: #222; border-radius: 16px; padding: 20px;
+    width: 100%; max-width: 360px; text-align: center;
+  }
+  #modal h2 { margin: 0 0 12px; }
+  #modal table { width: 100%; border-collapse: collapse; margin: 8px 0 16px; font-variant-numeric: tabular-nums; }
+  #modal td { padding: 5px 2px; border-bottom: 1px solid #eee; text-align: left; }
+  #modal td:last-child { text-align: right; font-weight: 600; }
+  #modal tr.total td { font-size: 18px; border-bottom: 0; }
+  #modal .rules { font-size: 13px; color: #555; margin: -6px 0 14px; text-align: left; line-height: 1.5; }
+  #modal .btns { display: flex; gap: 8px; }
+  #modal .btns button {
+    flex: 1; padding: 12px; border: 0; border-radius: 10px; font: inherit; font-weight: 600;
+    background: #e9ecef; color: #222;
+  }
+  #modal .btns button.primary { background: var(--felt); color: #fff; }
+  #modal .btns button.danger { background: #a33; color: #fff; }
+  #modal .link { display: inline-block; margin-top: 14px; padding: 6px; border: 0; background: none; color: #a33; font: inherit; font-size: 13px; }
+  #modal .version { margin-top: 6px; font-size: 12px; color: #999; }
+  #modal .new-high { color: #b8860b; font-weight: 700; margin-bottom: 8px; }
+  #toast {
+    position: fixed; left: 0; right: 0; bottom: 90px; margin: 0 auto; width: fit-content;
+    background: rgba(0,0,0,.8); padding: 8px 14px; border-radius: 20px; font-size: 14px;
+    opacity: 0; transition: opacity .25s; pointer-events: none; z-index: 900;
+    max-width: calc(100% - 32px); text-align: center;
+  }
+  #toast.show { opacity: 1; }
+  /* On a wide screen (the website), the bars stay as wide as the table. */
+  header > *, footer > * { max-width: 128px; }
+  header, footer { justify-content: center; }
+  /* In the Android app the window is already padded clear of the bars
+     (Main.java), so the page mustn't leave room for them again. */
+  .in-app header { padding-top: 6px; }
+  .in-app footer { padding-bottom: 6px; }
+</style>
+</head>
+<body>
+<!-- Suits as shapes, not characters: Android draws ♠♥♦♣ as emoji (grey, brown) whatever the font. -->
+<svg width="0" height="0" style="position:absolute">
+  <symbol id="s0" viewBox="0 0 100 100"><circle cx="50" cy="28" r="21"/><circle cx="27" cy="58" r="21"/><circle cx="73" cy="58" r="21"/><circle cx="50" cy="52" r="13"/><path d="M46 60 L38 98 H62 L54 60Z"/></symbol>
+  <symbol id="s1" viewBox="0 0 100 100"><path d="M50 2 L88 50 L50 98 L12 50Z"/></symbol>
+  <symbol id="s2" viewBox="0 0 100 100"><path d="M50 94 C30 74 4 58 4 32 C4 14 17 5 30 5 C40 5 47 11 50 19 C53 11 60 5 70 5 C83 5 96 14 96 32 C96 58 70 74 50 94Z"/></symbol>
+  <symbol id="s3" viewBox="0 0 100 100"><path d="M50 3 C38 25 6 42 6 64 C6 81 25 89 42 78 L36 98 H64 L58 78 C75 89 94 81 94 64 C94 42 62 25 50 3Z"/></symbol>
+</svg>
+<div id="app">
+  <header>
+    <div class="stat"><small>Game</small><b id="gameNo">#1</b></div>
+    <div class="stat"><small>Time</small><b id="time">0:00</b></div>
+    <div class="stat"><small>Moves</small><b id="moves">0</b></div>
+    <div class="stat"><small>Score</small><b id="score">0</b></div>
+    <div class="stat"><small>Best</small><b id="best">–</b></div>
+  </header>
+  <div id="board"></div>
+  <footer>
+    <button id="btnNew"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>New</button>
+    <button id="btnStats"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3l-5.6 2.9 1.1-6.2L3 9.6l6.2-.9z"/></svg>Stats</button>
+    <button id="btnHint"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.8.8 1 1.5 1 2.5h6c0-1 .2-1.7 1-2.5A6 6 0 0 0 12 3z"/></svg>Hint</button>
+    <button id="btnUndo"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/></svg>Undo</button>
+  </footer>
+</div>
+<div id="modal"><div class="box" id="modalBox"></div></div>
+<div id="toast"></div>
+
+<script src="faces.js"></script>
+<script>
+'use strict';
+const APP_VERSION = '1.7.3'; // set by android/build-apk.sh
+if (new URLSearchParams(location.search).has('app')) document.documentElement.classList.add('in-app');
+
+// ---------- Cards ----------
+// Card id 0..51: rank = (id>>2)+1 (A=1..K=13), suit = id&3 (0♣ 1♦ 2♥ 3♠) — Microsoft deal ordering.
+const SUIT_NAMES = ['♣', '♦', '♥', '♠'];
+const RANKS = ['', 'A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+const rank = c => (c >> 2) + 1;
+const suit = c => c & 3;
+const isRed = c => suit(c) === 1 || suit(c) === 2;
+const stacks = (a, b) => rank(a) === rank(b) - 1 && isRed(a) !== isRed(b);
+const suitSvg = s => `<svg viewBox="0 0 100 100"><use href="#s${s}"/></svg>`;
+const cardName = c => RANKS[rank(c)] + SUIT_NAMES[suit(c)];
+
+// Microsoft FreeCell deal numbers 1..32000 (#11982 is the famous unsolvable one).
+function deal(seed) {
+  let s = seed;
+  const rnd = () => { s = (s * 214013 + 2531011) % 2147483648; return Math.floor(s / 65536); };
+  const deck = Array.from({ length: 52 }, (_, i) => i);
+  const cols = [[], [], [], [], [], [], [], []];
+  for (let i = 0; i < 52; i++) {
+    const left = 52 - i, j = rnd() % left;
+    cols[i % 8].push(deck[j]);
+    deck[j] = deck[left - 1];
+  }
+  return cols;
+}
+function randomSeed() {
+  let n;
+  do { n = 1 + Math.floor(Math.random() * 32000); } while (n === 11982);
+  return n;
+}
+
+// ---------- Scoring ----------
+const PTS_FOUNDATION = 10;   // per card onto a foundation
+const PTS_UNDO = 5;          // taken off per undo
+const PTS_HINT = 2;          // taken off per hint shown
+const timeBonus = secs => Math.max(0, 600 - secs) * 2;
+const moveBonus = moves => Math.max(0, 200 - moves) * 3;
+// A finished game's score, from what happened in it (see logGame), so every
+// past score can be worked out again if these rules change.
+function scoreOf(g) {
+  const f = { cards: g.home * PTS_FOUNDATION, undos: g.undos, hints: g.hints || 0, time: 0, moves: 0 };
+  if (g.won) { f.time = timeBonus(Math.floor(g.ms / 1000)); f.moves = moveBonus(g.moves); }
+  f.total = f.cards - PTS_UNDO * f.undos - PTS_HINT * f.hints + f.time + f.moves;
+  return f;
+}
+// Undo restores the points from before the move, but the undo and hint counts
+// are never rolled back, so every undo and hint costs exactly its points.
+const liveScore = () => S.won && !sweeping ? S.final.total : S.points - PTS_UNDO * S.undos - PTS_HINT * (S.hints || 0);
+let sweeping = false; // the last cards are still flying home
+
+// ---------- Storage ----------
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+};
+const defaultStats = { played: 0, won: 0, bestScore: 0, bestTime: null, fewestMoves: null, streak: 0, bestStreak: 0 };
+let stats = Object.assign({}, defaultStats, { games: [] }, store.get('fc.stats', {}));
+// Every finished game (won, or given up after a move): the events its score
+// is made from. Best scores before this log existed are kept as legacyBest.
+if (!stats.games.length && stats.bestScore && stats.legacyBest == null) stats.legacyBest = stats.bestScore;
+function logGame(won) {
+  if (clockTimer) S.elapsed = performance.now() - clockStart;
+  // v: the scoring rules in force when it was played (1: no hint cost; 2: hints cost PTS_HINT).
+  // scoreOf applies today's rules to every game.
+  stats.games.push({ v: 2, seed: S.seed, start: S.startedAt || null, at: new Date().toISOString(), won,
+                     ms: Math.floor(S.elapsed), moves: S.moves, undos: S.undos, hints: S.hints || 0,
+                     home: S.found.reduce((n, f) => n + f.length, 0) });
+}
+const bestScore = () => stats.games.reduce((m, g) => g.won ? Math.max(m, scoreOf(g).total) : m, stats.legacyBest || 0);
+stats.bestScore = bestScore();
+
+// ---------- State ----------
+let S; // { seed, cols, cells, found, moves, points, undos, elapsed, started, won, final, last, history }
+function newState(seed) {
+  return { seed, cols: deal(seed), cells: [null, null, null, null], found: [[], [], [], []],
+           moves: 0, points: 0, undos: 0, elapsed: 0, started: false, won: false, final: null,
+           last: null, history: [] };
+}
+const snapshot = () => JSON.stringify({ cols: S.cols, cells: S.cells, found: S.found, moves: S.moves, points: S.points, last: S.last });
+let lastSave = 0;
+function save() { lastSave = performance.now(); store.set('fc.game', S); }
+
+// ---------- Rules ----------
+const freeCellCount = () => S.cells.filter(c => c === null).length;
+const emptyColCount = (except) => S.cols.filter((c, i) => c.length === 0 && i !== except).length;
+// Cards that can move as one: (free cells + 1) × 2^(empty columns), not
+// counting the empty column they're moving into.
+function maxMovable(toCol) {
+  return (freeCellCount() + 1) * Math.pow(2, emptyColCount(toCol));
+}
+function validSeqFrom(col, idx) {
+  for (let k = idx; k < col.length - 1; k++) if (!stacks(col[k + 1], col[k])) return false;
+  return true;
+}
+const fitsOn = (card, ci) => { const col = S.cols[ci]; return !col.length || stacks(card, col[col.length - 1]); };
+function canToCol(card, count, ci) {
+  return fitsOn(card, ci) && count <= maxMovable(S.cols[ci].length ? -1 : ci);
+}
+const canToFound = card => S.found[suit(card)].length === rank(card) - 1;
+
+// src: {t:'col',i,idx} | {t:'cell',i}
+function cardsAt(src) {
+  return src.t === 'col' ? S.cols[src.i].slice(src.idx) : [S.cells[src.i]];
+}
+function removeFrom(src) {
+  if (src.t === 'col') S.cols[src.i].splice(src.idx);
+  else S.cells[src.i] = null;
+}
+const placeKey = p => p.t === 'found' ? 'found' : p.t + p.i;
+
+// Attempt a move; dst: {t:'col',i} | {t:'cell',i?} | {t:'found'}
+function tryMove(src, dst) {
+  const cards = cardsAt(src), first = cards[0];
+  if (dst.t === 'col' && src.t === 'col' && dst.i === src.i) return false;
+  let ok = false;
+  if (dst.t === 'found') ok = cards.length === 1 && canToFound(first);
+  else if (dst.t === 'cell') {
+    if (cards.length === 1 && src.t !== 'cell') {
+      if (dst.i == null || S.cells[dst.i] !== null) dst.i = S.cells.indexOf(null);
+      ok = dst.i >= 0;
+    }
+  } else ok = canToCol(first, cards.length, dst.i);
+  if (!ok) return false;
+
+  S.history.push(snapshot());
+  if (S.history.length > 500) S.history.shift();
+  removeFrom(src);
+  if (dst.t === 'found') { S.found[suit(first)].push(first); S.points += PTS_FOUNDATION; }
+  else if (dst.t === 'cell') S.cells[dst.i] = first;
+  else S.cols[dst.i].push(...cards);
+  S.last = { card: first, from: placeKey(src), to: placeKey(dst) };
+  S.moves++;
+  if (!S.started) { S.started = true; S.startedAt = new Date().toISOString(); stats.played++; store.set('fc.stats', stats); startClock(); }
+  autoPlay();
+  render();
+  save();
+  checkWin();
+  checkStuck();
+  return true;
+}
+
+let autoDelay = [], autoCount = 0;
+// Cards only go up when tapped (Adam likes tapping them in), until the end:
+// once the rest can go home in order, or it's down to the last few with
+// blockers that a free cell or empty column can take, it plays itself out.
+const PARK_FROM = 8; // cards left at most, before the end may park blockers
+function autoPlay() {
+  let n = 0;
+  autoDelay = [];
+  const left = 52 - S.found.reduce((k, f) => k + f.length, 0);
+  const st = structuredClone({ cols: S.cols, cells: S.cells, found: S.found });
+  if (left && finish(st, undefined, left <= PARK_FROM)) finish(S, c => { autoDelay[c] = ++n; }, true);
+  autoCount = n;
+}
+
+// Can every card get home just by sending up what fits (and, with `park`,
+// putting whatever is on top of the next card needed in a free cell or empty
+// column)? Plays it out on `st` ({cols, cells, found}); `moved(card)` hears
+// each card that moves.
+function finish(st, moved = () => {}, park = true) {
+  const home = (c) => { st.found[suit(c)].push(c); if (st === S) S.points += PTS_FOUNDATION; moved(c); };
+  for (let step = 0; step < 400; step++) {
+    if (st.found.every(f => f.length === 13)) return true;
+    const fits = c => st.found[suit(c)].length === rank(c) - 1;
+    const ci = st.cells.findIndex(c => c !== null && fits(c));
+    if (ci >= 0) { const c = st.cells[ci]; st.cells[ci] = null; home(c); continue; }
+    const col = st.cols.find(col => col.length && fits(col[col.length - 1]));
+    if (col) { home(col.pop()); continue; }
+    // Dig out the next card that is fewest cards down.
+    let best = null, depth = Infinity;
+    for (const col of st.cols) col.forEach((c, k) => {
+      if (fits(c) && col.length - k < depth) { best = col; depth = col.length - k; }
+    });
+    if (!best || !park) return false;
+    const top = best.pop();
+    const cell = st.cells.indexOf(null);
+    if (cell >= 0) st.cells[cell] = top;
+    else {
+      const empty = st.cols.find(col => !col.length && col !== best);
+      if (!empty) return false;
+      empty.push(top);
+    }
+    moved(top);
+  }
+  return false;
+}
+
+// Tap = move to the best destination: foundation, a card it fits on, a free
+// cell (single cards), then an empty column.
+function autoMove(src) {
+  const cards = cardsAt(src), first = cards[0];
+  if (cards.length === 1 && canToFound(first)) return tryMove(src, { t: 'found' });
+  let tooMany = false;
+  for (let i = 0; i < 8; i++) {
+    if (!S.cols[i].length || (src.t === 'col' && src.i === i) || !fitsOn(first, i)) continue;
+    if (canToCol(first, cards.length, i)) return tryMove(src, { t: 'col', i });
+    tooMany = true;
+  }
+  if (cards.length === 1 && src.t === 'col' && freeCellCount()) return tryMove(src, { t: 'cell' });
+  // Not a whole column into another empty one: that changes nothing.
+  if (!(src.t === 'col' && src.idx === 0)) {
+    for (let i = 0; i < 8; i++) {
+      if (S.cols[i].length) continue;
+      if (canToCol(first, cards.length, i)) return tryMove(src, { t: 'col', i });
+      tooMany = true;
+    }
+  }
+  if (tooMany) tooManyToast(cards.length);
+  return false;
+}
+function tooManyToast(n) {
+  toast(`Can't move ${n} cards: free a cell or column`);
+}
+
+// ---------- Hints ----------
+// A useful move, as {src, dst}. Never the reverse of the last move, and never
+// shuffling a card off one it already sits on properly.
+const posKey = (cols, cells) => JSON.stringify([cols, cells.filter(c => c !== null).sort((a, b) => a - b)]);
+function keyAfter(src, dst) {
+  const cols = S.cols.map(c => c.slice()), cells = S.cells.slice();
+  const moving = src.t === 'col' ? cols[src.i].splice(src.idx) : [cells[src.i]];
+  if (src.t === 'cell') cells[src.i] = null;
+  if (dst.t === 'col') cols[dst.i].push(...moving);
+  else if (dst.t === 'cell') cells[cells.indexOf(null)] = moving[0];
+  return posKey(cols, cells);
+}
+function findHint() {
+  const sources = [];
+  S.cells.forEach((c, i) => { if (c !== null) sources.push({ t: 'cell', i }); });
+  S.cols.forEach((col, i) => {
+    for (let idx = col.length - 1; idx >= 0; idx--) {
+      if (!validSeqFrom(col, idx)) break;
+      sources.push({ t: 'col', i, idx });
+    }
+  });
+  const reverses = (src, dst) => S.last && cardsAt(src)[0] === S.last.card && placeKey(dst) === S.last.from;
+  // Is the card above it already a proper home (so moving it gains nothing)?
+  const seated = src => src.t === 'col' && src.idx > 0 && stacks(S.cols[src.i][src.idx], S.cols[src.i][src.idx - 1]);
+  // Never lead back to a position already seen this game (no going round in circles).
+  const seen = new Set(S.history.map(h => { const o = JSON.parse(h); return posKey(o.cols, o.cells); }));
+  seen.add(posKey(S.cols, S.cells));
+  const ok = (src, dst) => !reverses(src, dst) && !seen.has(keyAfter(src, dst));
+
+  // 1) to a foundation
+  for (const s of sources) {
+    const cards = cardsAt(s);
+    if (cards.length === 1 && canToFound(cards[0]) && ok(s, { t: 'found' })) return { src: s, dst: { t: 'found' } };
+  }
+  // 2) from a free cell onto a column
+  for (const s of sources) {
+    if (s.t !== 'cell') continue;
+    for (let i = 0; i < 8; i++) {
+      const d = { t: 'col', i };
+      if (S.cols[i].length && canToCol(S.cells[s.i], 1, i) && ok(s, d)) return { src: s, dst: d };
+    }
+  }
+  // 3) a run onto another column, uncovering something (or emptying a column)
+  for (const s of sources) {
+    if (s.t !== 'col' || seated(s)) continue;
+    const cards = cardsAt(s);
+    for (let i = 0; i < 8; i++) {
+      const d = { t: 'col', i };
+      if (i !== s.i && S.cols[i].length && canToCol(cards[0], cards.length, i) && ok(s, d)) return { src: s, dst: d };
+    }
+  }
+  // 4) the longest run that can go into an empty column
+  const empty = S.cols.findIndex(c => !c.length);
+  if (empty >= 0) {
+    let best = null;
+    for (const s of sources) {
+      if (s.t !== 'col' || s.idx === 0 || seated(s)) continue;
+      // A single card belongs in a free cell while there is one; an empty column is worth more.
+      if (s.idx === S.cols[s.i].length - 1 && freeCellCount()) continue;
+      const d = { t: 'col', i: empty };
+      if (canToCol(cardsAt(s)[0], cardsAt(s).length, empty) && ok(s, d) && (!best || s.idx < best.idx)) best = s;
+    }
+    if (best) return { src: best, dst: { t: 'col', i: empty } };
+  }
+  // 5) a free cell, from the shortest column (closest to emptying)
+  if (freeCellCount()) {
+    let best = null;
+    for (const s of sources) {
+      if (s.t !== 'col' || s.idx === 0 || s.idx !== S.cols[s.i].length - 1 || seated(s)) continue;
+      if (!ok(s, { t: 'cell', i: S.cells.indexOf(null) })) continue;
+      if (!best || S.cols[s.i].length < S.cols[best.i].length) best = s;
+    }
+    if (best) return { src: best, dst: { t: 'cell', i: S.cells.indexOf(null) } };
+  }
+  return null;
+}
+
+// ---------- Clock ----------
+let clockTimer = null, clockStart = 0;
+function startClock() {
+  if (clockTimer || !S.started || S.won) return;
+  clockStart = performance.now() - S.elapsed;
+  clockTimer = setInterval(tick, 250);
+}
+function stopClock() {
+  if (!clockTimer) return;
+  S.elapsed = performance.now() - clockStart;
+  clearInterval(clockTimer); clockTimer = null;
+}
+function tick() {
+  S.elapsed = performance.now() - clockStart;
+  updateHud();
+  // The app can be killed without warning; lose at most a few seconds.
+  if (performance.now() - lastSave > 5000) save();
+}
+const fmtTime = ms => { const s = Math.floor(ms / 1000); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; };
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) { stopClock(); save(); } else startClock();
+});
+window.addEventListener('pagehide', () => { stopClock(); save(); });
+// The Android app calls these when it goes to the background and back.
+window.onAppPause = () => { dropDrag(); stopClock(); save(); };
+window.onAppResume = () => startClock();
+
+// ---------- Layout & render ----------
+const board = document.getElementById('board');
+const cardEls = [];
+const slotEls = [];
+let L = {}; // layout metrics
+
+function buildDom() {
+  for (let i = 0; i < 16; i++) {
+    const el = document.createElement('div');
+    el.className = 'slot';
+    if (i >= 4 && i < 8) el.innerHTML = suitSvg(i - 4);
+    board.appendChild(el); slotEls.push(el);
+  }
+  for (let c = 0; c < 52; c++) {
+    const el = document.createElement('div');
+    el.className = 'card ' + (isRed(c) ? 'red' : 'black');
+    const r = RANKS[rank(c)];
+    const face = rank(c) > 10 && window.FACES && FACES[r + 'CDHS'[suit(c)]];
+    el.innerHTML = `<div class="top"><b${r === '10' ? ' class="ten"' : ''}>${r}</b>${suitSvg(suit(c))}</div>` +
+      (face ? `<div class="face" style="background-image:url(${face})"></div>` : `<div class="big">${suitSvg(suit(c))}</div>`);
+    el.dataset.card = c;
+    el.setAttribute('aria-label', cardName(c));
+    board.appendChild(el); cardEls.push(el);
+  }
+  for (const id of ['hintSrc', 'hintDst']) {
+    const el = document.createElement('div');
+    el.id = id; el.className = 'hint-box';
+    board.appendChild(el);
+  }
+  const again = document.createElement('button');
+  again.id = 'again'; again.textContent = 'New game';
+  again.onclick = () => startGame(randomSeed());
+  board.appendChild(again);
+}
+
+function layout() {
+  const bw = board.clientWidth, bh = board.clientHeight;
+  const W = Math.min(bw, 640);
+  const gap = Math.max(2, W * 0.005);
+  const cw = (W - gap * 9) / 8;
+  const ch = cw * 1.45;
+  const left = (bw - W) / 2 + gap;
+  const topY = gap * 2;
+  const tabY = topY + ch + gap * 4;
+  // Just the top line of a covered card shows (the pip and picture start below it).
+  L = { gap, cw, ch, left, topY, tabY, bh, fan: ch * 0.4 };
+  for (const el of cardEls) {
+    el.style.width = cw + 'px'; el.style.height = ch + 'px';
+    el.style.fontSize = (cw * 0.48) + 'px';
+  }
+  slotEls.forEach((el, i) => {
+    el.style.width = cw + 'px'; el.style.height = ch + 'px';
+    el.style.left = colX(i % 8) + 'px';
+    el.style.top = (i < 8 ? topY : tabY) + 'px';
+  });
+  document.getElementById('again').style.top = (tabY + ch * 1.5) + 'px';
+  clearHint();
+  render();
+}
+const colX = i => L.left + i * (L.cw + L.gap);
+
+function fanFor(n) {
+  if (n <= 1) return L.fan;
+  const avail = L.bh - L.tabY - L.ch - L.gap;
+  return Math.min(L.fan, Math.max(4, avail / (n - 1)));
+}
+
+let pos = []; // pos[card] = {x,y,z}
+function render() {
+  pos = [];
+  S.cells.forEach((c, i) => { if (c !== null) pos[c] = { x: colX(i), y: L.topY, z: 1 }; });
+  S.found.forEach((f, s) => f.forEach((c, k) => { pos[c] = { x: colX(4 + s), y: L.topY, z: 1 + k }; }));
+  S.cols.forEach((col, i) => {
+    const fan = fanFor(col.length);
+    col.forEach((c, k) => { pos[c] = { x: colX(i), y: L.tabY + k * fan, z: 10 + k }; });
+  });
+  for (let c = 0; c < 52; c++) {
+    const el = cardEls[c], p = pos[c];
+    if (el._hintAnim) { el._hintAnim.cancel(); el._hintAnim = null; } // a real move beats the hint's show
+    const delay = autoDelay[c] ? autoDelay[c] * 70 : 0;
+    const t = `translate(${p.x}px, ${p.y}px)`;
+    el.style.transitionDelay = delay + 'ms';
+    clearTimeout(el._landT);
+    if (dealRun && dealRun.flying.has(c)) continue; // the deal places it
+    if (el.style.transform && el.style.transform !== t) {
+      // A moving card flies above every other until it lands.
+      el.style.zIndex = 700 + p.z + (autoDelay[c] || 0);
+      el._landT = setTimeout(() => { el.style.zIndex = p.z; }, delay + 200);
+    } else el.style.zIndex = p.z;
+    el.style.transform = t;
+  }
+  autoDelay = [];
+  document.getElementById('again').style.display = S.won && !modal.classList.contains('open') ? 'block' : 'none';
+  updateHud();
+}
+
+function updateHud() {
+  document.getElementById('gameNo').textContent = '#' + S.seed;
+  document.getElementById('time').textContent = fmtTime(S.elapsed);
+  document.getElementById('moves').textContent = S.moves;
+  document.getElementById('score').textContent = String(liveScore()).replace('-', '−');
+  document.getElementById('best').textContent = stats.bestScore || '–';
+  document.getElementById('btnUndo').disabled = !S.history.length || S.won;
+}
+
+// ---------- Hint display ----------
+let shownHint = null;
+function showHint(h, animate) {
+  shownHint = h;
+  const cards = cardsAt(h.src);
+  const a = pos[cards[0]], b = pos[cards[cards.length - 1]];
+  const box = (el, x, y, w, hgt) => Object.assign(el.style, { display: 'block', left: x + 'px', top: y + 'px', width: w + 'px', height: hgt + 'px' });
+  box(document.getElementById('hintSrc'), a.x, a.y, L.cw, b.y - a.y + L.ch);
+  let x, y;
+  if (h.dst.t === 'found') { x = colX(4 + suit(cards[0])); y = L.topY; }
+  else if (h.dst.t === 'cell') { x = colX(h.dst.i); y = L.topY; }
+  else {
+    const col = S.cols[h.dst.i];
+    x = colX(h.dst.i); y = col.length ? pos[col[col.length - 1]].y : L.tabY;
+  }
+  box(document.getElementById('hintDst'), x, y, L.cw, L.ch);
+  if (!animate) return;
+  // Show the move: two little nudges towards where the cards would go (Adam
+  // chose these from a video, 26 Oct).
+  let tx = x, ty = y;
+  if (h.dst.t === 'col' && S.cols[h.dst.i].length) ty = y + fanFor(S.cols[h.dst.i].length + cards.length);
+  const fan = cards.length > 1 ? pos[cards[1]].y - a.y : 0;
+  const ease = 'cubic-bezier(.45,0,.55,1)';
+  cards.forEach((c, k) => {
+    const el = cardEls[c], p = pos[c], from = `translate(${p.x}px, ${p.y}px)`;
+    const nudge = `translate(${p.x + (tx - p.x) * .18}px, ${p.y + (ty + k * fan - p.y) * .18}px)`;
+    el.style.zIndex = 600 + k;
+    const anim = el._hintAnim = el.animate([
+      { transform: from, easing: ease }, { transform: nudge, offset: .2, easing: ease }, { transform: from, offset: .4, easing: ease },
+      { transform: nudge, offset: .6, easing: ease }, { transform: from, offset: .8 }, { transform: from }], { duration: 1200 });
+    anim.finished.then(() => { el._hintAnim = null; el.style.zIndex = pos[c].z; }, () => {});
+  });
+}
+function clearHint() {
+  document.getElementById('hintSrc').style.display = 'none';
+  document.getElementById('hintDst').style.display = 'none';
+}
+
+// ---------- Input ----------
+function locate(c) {
+  let i = S.cells.indexOf(c);
+  if (i >= 0) return { t: 'cell', i };
+  for (i = 0; i < 8; i++) {
+    const idx = S.cols[i].indexOf(c);
+    if (idx >= 0) return { t: 'col', i, idx };
+  }
+  return null; // on a foundation
+}
+
+function dropTarget(x, y) {
+  const i = Math.floor((x - L.left + L.gap / 2) / (L.cw + L.gap));
+  if (i < 0 || i > 7) return null;
+  if (y < L.tabY - L.gap) return i < 4 ? { t: 'cell', i } : { t: 'found' };
+  return { t: 'col', i };
+}
+
+let drag = null, lastTapMove = 0, hinted = null;
+board.addEventListener('pointerdown', e => {
+  const h = document.getElementById('hintSrc').style.display === 'block' ? shownHint : null;
+  clearHint();
+  hinted = h;
+  // A drag whose finger-up never arrived (a system gesture, the app going to
+  // the background) must not lock the cards: drop it and start afresh.
+  if (drag) dropDrag();
+  if (S.won) return;
+  const el = e.target.closest('.card');
+  if (!el) return;
+  const c = +el.dataset.card;
+  const src = locate(c);
+  if (!src) return;
+  if (src.t === 'col' && !validSeqFrom(S.cols[src.i], src.idx)) {
+    refuse(S.cols[src.i].slice(src.idx).map(k => cardEls[k]));
+    if (hinted) showHint(hinted);
+    return;
+  }
+  const cards = cardsAt(src);
+  drag = { src, cards, els: cards.map(k => cardEls[k]), x0: e.clientX, y0: e.clientY, moved: false, id: e.pointerId };
+  try { board.setPointerCapture(e.pointerId); } catch { /* that touch has already ended */ }
+});
+board.addEventListener('pointermove', e => {
+  if (!drag || e.pointerId !== drag.id) return;
+  const dx = e.clientX - drag.x0, dy = e.clientY - drag.y0;
+  if (!drag.moved && Math.hypot(dx, dy) < 8) return;
+  if (!drag.moved) {
+    drag.moved = true;
+    drag.els.forEach((el, k) => { el.classList.add('dragging'); el.style.zIndex = 500 + k; });
+  }
+  drag.cards.forEach((c, k) => {
+    const p = pos[c];
+    drag.els[k].style.transform = `translate(${p.x + dx}px, ${p.y + dy}px)`;
+  });
+});
+function endDrag(e) {
+  if (!drag || e.pointerId !== drag.id) return;
+  const d = drag; drag = null;
+  d.els.forEach(el => el.classList.remove('dragging'));
+  if (!d.moved) {
+    // Only a real lift counts as a tap: a system gesture cancels the touch.
+    if (e.type !== 'pointerup') return;
+    // A fumbled double tap shouldn't make a second move with the card underneath.
+    if (performance.now() - lastTapMove < 250) return;
+    // Tapping the card a hint pointed at sends it where the hint said.
+    const followHint = hinted && cardsAt(hinted.src).includes(d.cards[0]);
+    if (followHint ? tryMove(hinted.src, hinted.dst) : autoMove(d.src)) lastTapMove = performance.now();
+    else { refuse(d.els); if (hinted) showHint(hinted); }
+    return;
+  }
+  if (e.type === 'pointerup') {
+    // use the centre of the top dragged card as the drop point
+    const dx = e.clientX - d.x0, dy = e.clientY - d.y0;
+    const p = pos[d.cards[0]];
+    const t = dropTarget(p.x + dx + L.cw / 2, p.y + dy + L.ch * 0.3);
+    if (t && tryMove(d.src, t)) return;
+    render();
+    if (hinted) showHint(hinted);
+    if (t && t.t === 'col' && fitsOn(d.cards[0], t.i) && d.cards.length > 1) tooManyToast(d.cards.length);
+    setTimeout(() => refuse(d.els), 180);
+    return;
+  }
+  render();
+}
+board.addEventListener('pointerup', endDrag);
+board.addEventListener('pointercancel', endDrag);
+board.addEventListener('lostpointercapture', e => { if (drag && e.pointerId === drag.id) dropDrag(); });
+function dropDrag() {
+  if (!drag) return;
+  drag.els.forEach(el => el.classList.remove('dragging'));
+  drag = null;
+  render();
+}
+
+function refuse(els) {
+  for (const el of els) {
+    el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake');
+    // Never leave the red edge behind, even where animations are switched off.
+    clearTimeout(el._shakeT);
+    el._shakeT = setTimeout(() => el.classList.remove('shake'), 750);
+  }
+  if (navigator.vibrate) navigator.vibrate(25);
+}
+
+// ---------- Win ----------
+// Is there any legal move at all? (Not whether it helps: that's Hint's job.)
+function hasMove() {
+  const tops = [];
+  S.cells.forEach((c, i) => { if (c !== null) tops.push({ t: 'cell', i }); });
+  S.cols.forEach((col, i) => {
+    for (let idx = col.length - 1; idx >= 0 && validSeqFrom(col, idx); idx--) tops.push({ t: 'col', i, idx });
+  });
+  const emptyCol = S.cols.some(c => !c.length), freeCell = S.cells.includes(null);
+  for (const s of tops) {
+    const cards = cardsAt(s);
+    if (cards.length === 1 && canToFound(cards[0])) return true;
+    if (s.t === 'col' && cards.length === 1 && freeCell) return true;
+    if (emptyCol && !(s.t === 'col' && s.idx === 0)) return true;
+    for (let i = 0; i < 8; i++)
+      if (S.cols[i].length && !(s.t === 'col' && s.i === i) && canToCol(cards[0], cards.length, i)) return true;
+  }
+  return false;
+}
+// Stuck: say so, with the two ways out.
+function checkStuck() {
+  if (S.won || hasMove()) return;
+  const g = S;
+  setTimeout(() => {
+    if (S !== g || S.won || hasMove() || modal.classList.contains('open')) return;
+    openModal(`<h2>No moves left</h2><p>There's no legal move from here.</p>
+      <div class="btns">${S.history.length ? '<button data-act="undo">Undo</button>' : ''}
+      <button class="primary" data-act="new">New game</button></div>`);
+  }, 500);
+}
+
+function checkWin() {
+  if (S.won || S.found.some(f => f.length < 13)) return;
+  S.won = true;
+  stopClock();
+  logGame(true);
+  const f = scoreOf(stats.games[stats.games.length - 1]);
+  f.high = f.total > stats.bestScore;
+  S.final = f;
+  stats.won++; stats.streak++;
+  stats.bestStreak = Math.max(stats.bestStreak, stats.streak);
+  stats.bestScore = bestScore();
+  stats.bestTime = stats.bestTime == null ? S.elapsed : Math.min(stats.bestTime, S.elapsed);
+  stats.fewestMoves = stats.fewestMoves == null ? S.moves : Math.min(stats.fewestMoves, S.moves);
+  sweeping = true;
+  store.set('fc.stats', stats);
+  save(); updateHud();
+  // Let the last cards land first (they go up 70 ms apart).
+  const g = S; // unless New or Restart was pressed meanwhile
+  setTimeout(() => { sweeping = false; updateHud(); if (S === g) { celebrate(); showWinCard(); } }, 600 + autoCount * 70);
+}
+function showWinCard() {
+  const f = S.final;
+  openModal(`
+    <h2>You won!</h2>
+    ${f.high && stats.bestScore === f.total ? '<div class="new-high">★ New best score ★</div>' : ''}
+    <table>
+      <tr><td>Cards home</td><td>${f.cards}</td></tr>
+      ${f.undos ? `<tr><td>Undos (${f.undos})</td><td>−${PTS_UNDO * f.undos}</td></tr>` : ''}
+      ${f.hints ? `<tr><td>Hints (${f.hints})</td><td>−${PTS_HINT * f.hints}</td></tr>` : ''}
+      <tr><td>Time bonus (${fmtTime(S.elapsed)})</td><td>+${f.time}</td></tr>
+      <tr><td>Move bonus (${S.moves} move${S.moves === 1 ? '' : 's'})</td><td>+${f.moves}</td></tr>
+      <tr class="total"><td>Score</td><td>${f.total}</td></tr>
+      <tr><td>Best score</td><td>${stats.bestScore || '–'}</td></tr>
+    </table>
+    <div class="btns"><button data-act="restart">Replay #${S.seed}</button><button class="primary" data-act="new">New game</button></div>`);
+}
+function celebrate() {
+  for (let s = 0; s < 4; s++) {
+    const el = cardEls[S.found[s][12]];
+    const t = el.style.transform;
+    el.animate([{ transform: t }, { transform: t + ' scale(1.12) rotate(-6deg)' }, { transform: t }],
+               { duration: 500, delay: s * 120, iterations: 2 });
+  }
+}
+
+// ---------- Modal / toast ----------
+const modal = document.getElementById('modal'), modalBox = document.getElementById('modalBox');
+function openModal(html) { modalBox.innerHTML = html; modal.classList.add('open'); render(); }
+function closeModal() { modal.classList.remove('open'); render(); }
+modal.addEventListener('click', e => {
+  if (e.target === modal) {
+    // A tap outside the dialog closes it, and still works a button under it.
+    closeModal();
+    const under = document.elementFromPoint(e.clientX, e.clientY);
+    const btn = under && under.closest('footer button');
+    if (btn) btn.click();
+    return;
+  }
+  const act = e.target.closest('button') && e.target.closest('button').dataset.act;
+  if (!act) return;
+  closeModal();
+  if (act === 'new') startGame(randomSeed());
+  else if (act === 'restart') restartGame();
+  else if (act === 'undo') undo();
+  else if (act === 'reset-ask') openModal(`<h2>Reset statistics?</h2><p>Your best score, best time and streaks will be lost.</p>
+    <div class="btns"><button data-act="stats">Cancel</button><button class="danger" data-act="reset">Reset</button></div>`);
+  else if (act === 'stats') document.getElementById('btnStats').onclick();
+  else if (act === 'reset') { stats = Object.assign({}, defaultStats, { played: inProgress() ? 1 : 0, games: [] }); store.set('fc.stats', stats); updateHud(); }
+});
+// Android's Back button: close a dialog if one is open (Main.java asks).
+window.onBack = () => {
+  if (document.getElementById('hintSrc').style.display === 'block') { clearHint(); return true; }
+  if (!modal.classList.contains('open')) return false;
+  const back = modalBox.querySelector('[data-act="stats"]'); // the Reset confirmation goes back to Stats
+  closeModal();
+  if (back) document.getElementById('btnStats').onclick();
+  return true;
+};
+let toastT;
+function toast(msg, ms = 2500) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), ms);
+}
+
+// ---------- Game control ----------
+function forfeitIfNeeded() {
+  if (S && S.started && !S.won) { stats.streak = 0; logGame(false); store.set('fc.stats', stats); }
+}
+function startGame(seed) {
+  forfeitIfNeeded();
+  stopClock();
+  S = newState(seed);
+  render(); save();
+  throwDeal();
+}
+
+// The deal, on a new game and when the app starts (not on just switching back
+// to it, Adam: too much): foundations and free cells first, then the columns
+// across and row by row, as they're dealt.
+let lastDeal = -Infinity;
+// The deal (Adam chose "D" from a video of six, 26 Oct): the cards come out
+// of a pile in the middle of the table, growing as they fly to their places.
+// Driven frame by frame (not left to the browser to hold cards in the pile
+// before their turn: a phone's WebView showed them in place first).
+let dealRun = null;
+const DEAL_MS = 360, DEAL_GAP = 20;
+function throwDeal(onShown) {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) { if (onShown) onShown(); return; }
+  if (performance.now() - lastDeal < 1500) return;
+  lastDeal = performance.now();
+  const order = [...S.found.flat(), ...S.cells.filter(c => c !== null)];
+  const rows = Math.max(...S.cols.map(c => c.length));
+  for (let row = 0; row < rows; row++)
+    for (let i = 0; i < 8; i++) if (S.cols[i][row] !== undefined) order.push(S.cols[i][row]);
+  const px = board.clientWidth / 2 - L.cw / 2, py = L.bh * 0.45;
+  dealRun = { order, px, py, t0: null, flying: new Set(order) };
+  order.forEach((c, n) => {
+    const el = cardEls[c];
+    el.style.transition = 'none';
+    el.style.transform = `translate(${px}px, ${py}px) scale(.5)`;
+    el.style.zIndex = 1000 + order.length - n; // dealt from the top of the pile
+  });
+  if (onShown) onShown();
+  requestAnimationFrame(dealStep);
+}
+function dealStep(now) {
+  const d = dealRun;
+  if (!d) return;
+  if (d.t0 === null) d.t0 = now + 50; // let the pile be seen for a moment first
+  d.order.forEach((c, n) => {
+    if (!d.flying.has(c)) return;
+    const el = cardEls[c], p = pos[c], k = (now - d.t0 - n * DEAL_GAP) / DEAL_MS;
+    if (k <= 0) return; // still in the pile
+    if (k >= 1) {
+      d.flying.delete(c);
+      el.style.transform = `translate(${p.x}px, ${p.y}px)`;
+      el.style.transition = '';
+      el.style.zIndex = p.z;
+      return;
+    }
+    el.style.zIndex = 2000 + n; // in the air: over the pile and the cards already down
+    const e = 1 - Math.pow(1 - k, 3); // fast out, gentle landing
+    el.style.transform = `translate(${d.px + (p.x - d.px) * e}px, ${d.py + (p.y - d.py) * e}px) scale(${.5 + .5 * e})`;
+  });
+  if (d.flying.size) requestAnimationFrame(dealStep);
+  else dealRun = null;
+}
+const restartGame = () => startGame(S.seed);
+const inProgress = () => S.started && !S.won;
+
+document.querySelectorAll('footer button').forEach(b => b.addEventListener('pointerdown', clearHint));
+document.getElementById('btnNew').onclick = () => {
+  if (!inProgress()) return startGame(randomSeed());
+  openModal(`<h2>New game?</h2><p>This game will count as a loss and end your streak.</p>
+    <div class="btns"><button data-act="cancel">Cancel</button><button class="primary" data-act="new">New game</button></div>`);
+};
+function undo() {
+  if (!S.history.length || S.won) return false;
+  Object.assign(S, JSON.parse(S.history.pop()));
+  S.undos++;
+  render(); save();
+  return true;
+}
+// Hold Undo to keep undoing: once at once, then repeating after a pause.
+const undoBtn = document.getElementById('btnUndo');
+let undoT = null;
+const stopUndo = () => { clearTimeout(undoT); undoT = null; };
+undoBtn.addEventListener('pointerdown', e => {
+  e.preventDefault();
+  stopUndo();
+  if (!undo()) return;
+  const again = (ms) => { undoT = setTimeout(() => { if (undo()) again(90); else stopUndo(); }, ms); };
+  again(450);
+});
+['pointerup', 'pointercancel', 'pointerleave'].forEach(t => undoBtn.addEventListener(t, stopUndo));
+undoBtn.onclick = e => { if (e.detail === 0) undo(); }; // keyboard; pointers are handled above
+document.getElementById('btnHint').onclick = () => {
+  if (S.won) return;
+  const h = findHint();
+  if (!h) return toast(S.history.length ? 'No useful move found — try Undo' : 'No useful move found — tap New', 4000);
+  S.hints = (S.hints || 0) + 1;
+  updateHud(); save();
+  showHint(h, true);
+};
+document.getElementById('btnStats').onclick = () => {
+  const pct = stats.played ? Math.round(100 * stats.won / stats.played) : 0;
+  openModal(`<h2>Statistics</h2>
+    <table>
+      <tr><td>Best score</td><td>${stats.bestScore || '–'}</td></tr>
+      <tr><td>Best time</td><td>${stats.bestTime != null ? fmtTime(stats.bestTime) : '–'}</td></tr>
+      <tr><td>Fewest moves</td><td>${stats.fewestMoves ?? '–'}</td></tr>
+      <tr><td>Games played</td><td>${stats.played}</td></tr>
+      <tr><td>Games won</td><td>${stats.won} (${pct}%)</td></tr>
+      <tr><td>Current streak</td><td>${stats.streak}</td></tr>
+      <tr><td>Best streak</td><td>${stats.bestStreak}</td></tr>
+    </table>
+    <div class="rules">
+      Each card home: +${PTS_FOUNDATION}<br>
+      Each undo: −${PTS_UNDO} · each hint: −${PTS_HINT}<br>
+      On a win: +2 for every second under 10:00,<br>and +3 for every move under 200
+    </div>
+    <div class="btns"><button class="primary" data-act="cancel">Close</button></div>
+    <button class="link" data-act="reset-ask">Reset statistics…</button>
+    <div class="version">FreeCell ${APP_VERSION} · no ads, no internet<br>
+      Court cards © David Bellot, LGPL</div>`);
+};
+
+// ---------- Boot ----------
+buildDom();
+const saved = store.get('fc.game', null);
+if (saved && saved.cols && saved.cols.length === 8 && 'points' in saved) S = saved;
+else S = newState(randomSeed());
+save(); // so the first deal is still there if the app is reopened before a move
+startClock();
+// Lay out once the table has its real size, and again whenever it changes: a
+// cold-started Android WebView begins at 0x0 and settles in steps (the
+// window, then the padding for the bars). Deal and say hello after the first.
+// The cards stay hidden until the size has held still for a moment, then
+// appear already at the start of the deal.
+let laidOut = false, settleT;
+board.classList.add('waiting');
+new ResizeObserver(() => {
+  if (!board.clientWidth || !board.clientHeight) return;
+  layout();
+  if (laidOut) return;
+  clearTimeout(settleT);
+  settleT = setTimeout(() => {
+    laidOut = true;
+    throwDeal(() => board.classList.remove('waiting'));
+    if (S.won && S.final) showWinCard();
+    else checkStuck(); // a game saved with no moves left
+  }, 150);
+}).observe(board);
+// Offline web app on the site (https; localhost for testing), not in the Android app (file:).
+if ('serviceWorker' in navigator && window.isSecureContext && location.protocol !== 'file:') navigator.serviceWorker.register('sw.js').catch(() => {});
+</script>
+</body>
+</html>
