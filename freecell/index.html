@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FreeCell – No Ads</title>
+<meta name="description" content="Classic FreeCell solitaire for Android. No ads, no internet, no tracking. Just cards.">
+<meta property="og:title" content="FreeCell – No Ads">
+<meta property="og:description" content="Classic FreeCell solitaire for Android. No ads, no internet, no tracking. Just cards.">
+<meta property="og:image" content="https://adam-clements.com/freecell/feature.webp">
+<link rel="icon" href="icon.png">
+<style>
+  :root { --felt: #0f5132; --felt-dark: #0a3d26; --ink: #1d2420; --muted: #5b665f; --paper: #fbfaf6; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: var(--ink); background: var(--paper); line-height: 1.6; }
+  header {
+    background: radial-gradient(ellipse at 70% 30%, #1a8050 0%, var(--felt) 55%, var(--felt-dark) 100%);
+    color: #fff; padding: 56px 20px 64px; text-align: center;
+  }
+  header img.icon { width: 96px; height: 96px; border-radius: 22px; box-shadow: 0 6px 20px rgba(0,0,0,.35); }
+  h1 { font-size: clamp(2.2rem, 6vw, 3.4rem); margin: 18px 0 6px; letter-spacing: -.02em; }
+  .tag { font-size: 1.2rem; opacity: .92; margin: 0 0 26px; }
+  .badge { display: inline-block; background: #fff; color: var(--felt); font-weight: 700; padding: 12px 22px; border-radius: 12px; text-decoration: none; }
+  .badge.soon { background: rgba(255,255,255,.14); color: #fff; border: 1px solid rgba(255,255,255,.4); }
+  main { max-width: 920px; margin: 0 auto; padding: 40px 20px 60px; }
+  .shots { display: flex; gap: min(16px, 3vw); justify-content: center; margin: -96px auto 40px; }
+  .shots img { width: min(250px, 30vw); height: auto; border-radius: min(18px, 3vw); box-shadow: 0 10px 30px rgba(0,0,0,.25); background: #0f5132; }
+  h2 { font-size: 1.4rem; margin: 36px 0 10px; }
+  ul { padding-left: 1.2em; }
+  li { margin: 6px 0; }
+  .promise { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin: 10px 0 0; }
+  .promise div { background: #fff; border: 1px solid #e6e3da; border-radius: 12px; padding: 16px; }
+  .promise b { display: block; font-size: 1.05rem; }
+  footer { border-top: 1px solid #e6e3da; padding: 22px 20px 40px; text-align: center; color: var(--muted); font-size: .9rem; }
+  footer a { color: var(--muted); }
+</style>
+</head>
+<body>
+<header>
+  <img class="icon" src="icon.png" alt="">
+  <h1>FreeCell – No Ads</h1>
+  <p class="tag">Classic FreeCell solitaire. No ads, no internet, no tracking. Just cards.</p>
+  <span class="badge soon">Coming soon to Google Play</span>
+</header>
+<main>
+  <div class="shots">
+    <img src="screen-1.webp" alt="A fresh deal" width="540" height="960">
+    <img src="screen-2.webp" alt="A game in progress with a hint showing" width="540" height="960">
+    <img src="screen-3.webp" alt="The win card with the score" width="540" height="960">
+  </div>
+
+  <div class="promise">
+    <div><b>No adverts</b>Not one. Pay once, play for ever.</div>
+    <div><b>No internet</b>The app doesn't even ask for network access.</div>
+    <div><b>No tracking</b>Your games and scores never leave your phone.</div>
+  </div>
+
+  <h2>Made for one hand on a phone</h2>
+  <ul>
+    <li>Tap a card to send it to the best place, or drag cards and whole runs.</li>
+    <li>Undo as far back as you like; hold Undo to rewind.</li>
+    <li>Hints play the move for you to see.</li>
+    <li>Once the game is won, the rest of the cards go home by themselves.</li>
+    <li>The classic 32,000 numbered deals, so game #11982 means the same here as anywhere.</li>
+    <li>Timer, moves and a score; your best score, best time, fewest moves and streaks are kept on your phone.</li>
+    <li>Your game is saved the moment you leave, and the clock waits for you.</li>
+  </ul>
+
+  <h2>Why</h2>
+  <p>I liked the FreeCell game on my phone and hated its adverts, so I made my own. It does the one thing and gets out of the way.</p>
+</main>
+<footer>
+  Made by <a href="/">Adam Clements</a> · <a href="privacy.html">Privacy policy</a> ·
+  Court-card pictures from SVG-cards by David Bellot (LGPL-2.1)
+</footer>
+</body>
+</html>
