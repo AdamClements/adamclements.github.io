@@ -192,7 +192,7 @@
 <script src="faces.js"></script>
 <script>
 'use strict';
-const APP_VERSION = '1.7.5'; // set by android/build-apk.sh
+const APP_VERSION = '1.7.6'; // set by android/build-apk.sh
 if (new URLSearchParams(location.search).has('app')) document.documentElement.classList.add('in-app');
 
 // ---------- Cards ----------
@@ -606,13 +606,15 @@ function render() {
     // The rule for every move: a card in flight is above every card at rest,
     // until it has landed, however many times the table is drawn meanwhile.
     const now = performance.now();
-    if (el.style.transform && el.style.transform !== t) el._landAt = Math.max(el._landAt || 0, now + delay + 200);
+    // (Compared with what we last set: the browser rounds what it reads back,
+    // which made every card look as if it were moving.)
+    if (el._to && el._to !== t) el._landAt = Math.max(el._landAt || 0, now + delay + 200);
     if ((el._landAt || 0) > now) {
       el.style.zIndex = 700 + p.z + (autoDelay[c] || 0);
       clearTimeout(el._landT);
       el._landT = setTimeout(() => { el.style.zIndex = pos[c].z; el._landAt = 0; }, el._landAt - now);
     } else if (!el.classList.contains('dragging')) el.style.zIndex = p.z;
-    el.style.transform = t;
+    el.style.transform = el._to = t;
   }
   autoDelay = [];
   document.getElementById('again').style.display = S.won && !modal.classList.contains('open') ? 'block' : 'none';
@@ -721,6 +723,7 @@ board.addEventListener('pointermove', e => {
   drag.cards.forEach((c, k) => {
     const p = pos[c];
     drag.els[k].style.transform = `translate(${p.x + dx}px, ${p.y + dy}px)`;
+    drag.els[k]._to = 'dragged'; // off its place: going back (or on) is a move
   });
 });
 function endDrag(e) {
@@ -939,7 +942,7 @@ function dealStep(now) {
     if (k <= 0) return; // still in the pile
     if (k >= 1) {
       d.flying.delete(c);
-      el.style.transform = `translate(${p.x}px, ${p.y}px)`;
+      el.style.transform = el._to = `translate(${p.x}px, ${p.y}px)`;
       el.style.transition = '';
       el.style.zIndex = p.z;
       return;
