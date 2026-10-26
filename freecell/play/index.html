@@ -192,7 +192,7 @@
 <script src="faces.js"></script>
 <script>
 'use strict';
-const APP_VERSION = '1.7.4'; // set by android/build-apk.sh
+const APP_VERSION = '1.7.5'; // set by android/build-apk.sh
 if (new URLSearchParams(location.search).has('app')) document.documentElement.classList.add('in-app');
 
 // ---------- Cards ----------
@@ -554,8 +554,9 @@ function layout() {
   const wide = bw >= 700;
   const W = wide ? Math.min(bw - 64, 860, bh * 1.15) : Math.min(bw, 640);
   const gap = wide ? W * 0.018 : Math.max(2, W * 0.005);
-  // The top row has a gap between the free cells and the foundations.
-  const mid = W * (wide ? 0.05 : 0.04);
+  // On a wide screen the top row has a gap between the free cells and the
+  // foundations (a phone keeps every pixel for the cards).
+  const mid = wide ? W * 0.05 : 0;
   const cw = (W - gap * 9 - mid) / 8;
   const ch = cw * 1.45;
   const left = (bw - W) / 2 + gap;
