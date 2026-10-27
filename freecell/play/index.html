@@ -114,12 +114,14 @@
   }
   #hintSrc { box-shadow: 0 0 0 3px var(--gold), 0 0 12px rgba(255,213,74,.6); }
   #hintDst { outline: 3px dashed var(--gold); outline-offset: 1px; }
-  #again {
+  #again, #complete {
     position: absolute; left: 50%; transform: translateX(-50%); z-index: 300; display: none;
     padding: 0 28px; height: 48px; border: 0; border-radius: 12px;
     background: #fff; color: var(--felt); font: inherit; font-size: 17px; font-weight: 600;
     box-shadow: 0 2px 8px rgba(0,0,0,.35);
   }
+
+  #complete { bottom: 16px; z-index: 900; white-space: nowrap; }
 
   #modal {
     position: fixed; inset: 0; display: none; align-items: center; justify-content: center;
@@ -192,7 +194,7 @@
 <script src="faces.js"></script>
 <script>
 'use strict';
-const APP_VERSION = '1.7.6'; // set by android/build-apk.sh
+const APP_VERSION = '1.8.0'; // set by android/build-apk.sh
 if (new URLSearchParams(location.search).has('app')) document.documentElement.classList.add('in-app');
 
 // ---------- Cards ----------
@@ -327,7 +329,6 @@ function tryMove(src, dst) {
   S.last = { card: first, from: placeKey(src), to: placeKey(dst) };
   S.moves++;
   if (!S.started) { S.started = true; S.startedAt = new Date().toISOString(); stats.played++; store.set('fc.stats', stats); startClock(); }
-  autoPlay();
   render();
   save();
   checkWin();
@@ -335,50 +336,78 @@ function tryMove(src, dst) {
   return true;
 }
 
-let autoDelay = [], autoCount = 0;
-// Cards only go up when tapped (Adam likes tapping them in), until the end:
-// once the rest can go home in order, or it's down to the last few with
-// blockers that a free cell or empty column can take, it plays itself out.
+// Cards only go up when tapped (Adam likes tapping them in). Once the game
+// is certainly won (the rest can go home in order, or it's down to the last
+// few with blockers a free cell or empty column can take), an Auto-complete
+// button appears; tapping it plays the cards home one at a time.
 const PARK_FROM = 8; // cards left at most, before the end may park blockers
-function autoPlay() {
-  let n = 0;
-  autoDelay = [];
-  const left = 52 - S.found.reduce((k, f) => k + f.length, 0);
-  const st = structuredClone({ cols: S.cols, cells: S.cells, found: S.found });
-  if (left && finish(st, undefined, left <= PARK_FROM)) finish(S, c => { autoDelay[c] = ++n; }, true);
-  autoCount = n;
+let autoDelay = [], autoCount = 0, completing = null;
+const cardsLeft = () => 52 - S.found.reduce((k, f) => k + f.length, 0);
+function canComplete() {
+  const left = cardsLeft();
+  return left > 0 && !S.won && finish(structuredClone({ cols: S.cols, cells: S.cells, found: S.found }), left <= PARK_FROM);
 }
 
-// Can every card get home just by sending up what fits (and, with `park`,
-// putting whatever is on top of the next card needed in a free cell or empty
-// column)? Plays it out on `st` ({cols, cells, found}); `moved(card)` hears
-// each card that moves.
-function finish(st, moved = () => {}, park = true) {
-  const home = (c) => { st.found[suit(c)].push(c); if (st === S) S.points += PTS_FOUNDATION; moved(c); };
-  for (let step = 0; step < 400; step++) {
-    if (st.found.every(f => f.length === 13)) return true;
-    const fits = c => st.found[suit(c)].length === rank(c) - 1;
-    const ci = st.cells.findIndex(c => c !== null && fits(c));
-    if (ci >= 0) { const c = st.cells[ci]; st.cells[ci] = null; home(c); continue; }
-    const col = st.cols.find(col => col.length && fits(col[col.length - 1]));
-    if (col) { home(col.pop()); continue; }
-    // Dig out the next card that is fewest cards down.
-    let best = null, depth = Infinity;
-    for (const col of st.cols) col.forEach((c, k) => {
-      if (fits(c) && col.length - k < depth) { best = col; depth = col.length - k; }
-    });
-    if (!best || !park) return false;
-    const top = best.pop();
-    const cell = st.cells.indexOf(null);
-    if (cell >= 0) st.cells[cell] = top;
-    else {
-      const empty = st.cols.find(col => !col.length && col !== best);
-      if (!empty) return false;
-      empty.push(top);
-    }
-    moved(top);
+// The next move of the end game on `st` ({cols, cells, found}): send up what
+// fits, else (with `park`) move whatever is on top of the next card needed to
+// a free cell or empty column. 'done', a move, or null when it can't go on.
+function finishStep(st, park) {
+  if (st.found.every(f => f.length === 13)) return 'done';
+  const fits = c => st.found[suit(c)].length === rank(c) - 1;
+  const ci = st.cells.findIndex(c => c !== null && fits(c));
+  if (ci >= 0) return { from: { t: 'cell', i: ci }, home: true };
+  const i = st.cols.findIndex(col => col.length && fits(col[col.length - 1]));
+  if (i >= 0) return { from: { t: 'col', i }, home: true };
+  if (!park) return null;
+  // Dig out the next card that is fewest cards down.
+  let best = -1, depth = Infinity;
+  st.cols.forEach((col, ci) => col.forEach((c, k) => {
+    if (fits(c) && col.length - k < depth) { best = ci; depth = col.length - k; }
+  }));
+  if (best < 0) return null;
+  const cell = st.cells.indexOf(null);
+  if (cell >= 0) return { from: { t: 'col', i: best }, to: { t: 'cell', i: cell } };
+  const empty = st.cols.findIndex((col, ci) => !col.length && ci !== best);
+  return empty >= 0 ? { from: { t: 'col', i: best }, to: { t: 'col', i: empty } } : null;
+}
+function applyStep(st, m) {
+  const c = m.from.t === 'cell' ? st.cells[m.from.i] : st.cols[m.from.i].pop();
+  if (m.from.t === 'cell') st.cells[m.from.i] = null;
+  if (m.home) st.found[suit(c)].push(c);
+  else if (m.to.t === 'cell') st.cells[m.to.i] = c;
+  else st.cols[m.to.i].push(c);
+  return c;
+}
+function finish(st, park = true) {
+  for (let n = 0; n < 400; n++) {
+    const m = finishStep(st, park);
+    if (m === 'done') return true;
+    if (!m) return false;
+    applyStep(st, m);
   }
   return false;
+}
+// One undo step for the whole run; input waits until it's done.
+function startComplete() {
+  if (completing || !canComplete()) return;
+  clearHint();
+  S.history.push(snapshot());
+  completing = { game: S };
+  render();
+  completeStep();
+}
+function completeStep() {
+  if (!completing || completing.game !== S) { completing = null; return; }
+  const m = finishStep(S, true);
+  if (!m || m === 'done') {
+    completing = null; autoCount = 0;
+    render(); save(); checkWin();
+    return;
+  }
+  applyStep(S, m);
+  if (m.home) S.points += PTS_FOUNDATION;
+  render(); save();
+  completing.t = setTimeout(completeStep, 170);
 }
 
 // Tap = move to the best destination: foundation, a card it fits on, a free
@@ -545,6 +574,10 @@ function buildDom() {
   again.id = 'again'; again.textContent = 'New game';
   again.onclick = () => startGame(randomSeed());
   board.appendChild(again);
+  const complete = document.createElement('button');
+  complete.id = 'complete'; complete.textContent = 'Auto-complete';
+  complete.onclick = startComplete;
+  board.appendChild(complete);
 }
 
 function layout() {
@@ -618,6 +651,7 @@ function render() {
   }
   autoDelay = [];
   document.getElementById('again').style.display = S.won && !modal.classList.contains('open') ? 'block' : 'none';
+  document.getElementById('complete').style.display = !completing && !modal.classList.contains('open') && canComplete() ? 'block' : 'none';
   updateHud();
 }
 
@@ -691,6 +725,7 @@ function dropTarget(x, y) {
 
 let drag = null, lastTapMove = 0, hinted = null;
 board.addEventListener('pointerdown', e => {
+  if (completing) return; // the cards are going home
   const h = document.getElementById('hintSrc').style.display === 'block' ? shownHint : null;
   clearHint();
   hinted = h;
@@ -896,6 +931,7 @@ function forfeitIfNeeded() {
   if (S && S.started && !S.won) { stats.streak = 0; logGame(false); store.set('fc.stats', stats); }
 }
 function startGame(seed) {
+  if (completing) { clearTimeout(completing.t); completing = null; }
   forfeitIfNeeded();
   stopClock();
   S = newState(seed);
@@ -964,6 +1000,7 @@ document.getElementById('btnNew').onclick = () => {
     <div class="btns"><button data-act="cancel">Cancel</button><button class="primary" data-act="new">New game</button></div>`);
 };
 function undo() {
+  if (completing) return false;
   if (!S.history.length || S.won) return false;
   Object.assign(S, JSON.parse(S.history.pop()));
   S.undos++;
@@ -984,6 +1021,7 @@ undoBtn.addEventListener('pointerdown', e => {
 ['pointerup', 'pointercancel', 'pointerleave'].forEach(t => undoBtn.addEventListener(t, stopUndo));
 undoBtn.onclick = e => { if (e.detail === 0) undo(); }; // keyboard; pointers are handled above
 document.getElementById('btnHint').onclick = () => {
+  if (completing) return;
   if (S.won) return;
   const h = findHint();
   if (!h) return toast(S.history.length ? 'No useful move found — try Undo' : 'No useful move found — tap New', 4000);
