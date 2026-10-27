@@ -194,7 +194,7 @@
 <script src="faces.js"></script>
 <script>
 'use strict';
-const APP_VERSION = '1.8.0'; // set by android/build-apk.sh
+const APP_VERSION = '1.8.1'; // set by android/build-apk.sh
 if (new URLSearchParams(location.search).has('app')) document.documentElement.classList.add('in-app');
 
 // ---------- Cards ----------
@@ -407,7 +407,7 @@ function completeStep() {
   applyStep(S, m);
   if (m.home) S.points += PTS_FOUNDATION;
   render(); save();
-  completing.t = setTimeout(completeStep, 170);
+  completing.t = setTimeout(completeStep, 120);
 }
 
 // Tap = move to the best destination: foundation, a card it fits on, a free
