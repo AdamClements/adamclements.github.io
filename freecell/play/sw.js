@@ -1,5 +1,5 @@
 // Network-first so updates land straight away; falls back to cache when offline.
-const CACHE = 'freecell-1.8.1';
+const CACHE = 'freecell-1.8.2';
 const FILES = ['./', 'index.html', 'faces.js', 'manifest.webmanifest', 'icon.svg', 'icon-192.png', 'icon-512.png'];
 
 self.addEventListener('install', e => {

@@ -194,7 +194,7 @@
 <script src="faces.js"></script>
 <script>
 'use strict';
-const APP_VERSION = '1.8.1'; // set by android/build-apk.sh
+const APP_VERSION = '1.8.2'; // set by android/build-apk.sh
 if (new URLSearchParams(location.search).has('app')) document.documentElement.classList.add('in-app');
 
 // ---------- Cards ----------
@@ -785,7 +785,8 @@ function endDrag(e) {
     render();
     if (hinted) showHint(hinted);
     if (t && t.t === 'col' && fitsOn(d.cards[0], t.i) && d.cards.length > 1) tooManyToast(d.cards.length);
-    setTimeout(() => refuse(d.els), 180);
+    // A drop that doesn't fit just goes back: no shake or buzz (slight
+    // accidental drags are common; a refused tap still shakes).
     return;
   }
   render();
