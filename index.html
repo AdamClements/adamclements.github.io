@@ -33,7 +33,7 @@ gtag('config', 'AW-699864087');
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Courier+Prime&display=swap" rel="stylesheet">
 <style>
-/* Layout: one continuous manuscript, set the way Perfect Day sets a page. A short title, a run-in introduction (the day job), then each thing made as a section of the same text, parted by a fleuron. */
+/* Layout: a page per thing. Each section fills the screen, its content centred, and nothing on it may be taller than the screen: figures are capped by the viewport height. */
 :root {
   --paper: #f8f1e3; --ink: #3b2f24; --quiet: #8a7860; --rule: #c9b99c; --plum: #733e62;
   --serif: "EB Garamond", Garamond, "Times New Roman", serif;
@@ -41,7 +41,8 @@ gtag('config', 'AW-699864087');
   color-scheme: light;
 }
 * { box-sizing: border-box; }
-html { background: var(--paper); -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+html { background: var(--paper); -webkit-text-size-adjust: 100%; scroll-behavior: smooth; scroll-snap-type: y proximity; }
+.page { min-height: 100svh; display: flex; flex-direction: column; justify-content: center; padding-block: 2.5rem; scroll-snap-align: start; }
 body { margin: 0; padding: 0 max(1.25rem, env(safe-area-inset-right)) 0 max(1.25rem, env(safe-area-inset-left));
   background: var(--paper); color: var(--ink); font: 1.2rem/1.6 var(--serif); font-feature-settings: "kern", "liga", "onum"; }
 img { max-width: 100%; height: auto; display: block; }
@@ -50,19 +51,18 @@ a:focus-visible { outline: 1px solid var(--plum); outline-offset: 3px; }
 .sc { font-variant: small-caps; font-feature-settings: "smcp", "kern"; letter-spacing: 0.06em; }
 
 /* The title */
-.front { max-width: var(--measure); margin: 0 auto; padding: 4.5rem 0 0; text-align: center; }
+.front { max-width: var(--measure); margin: 0 auto; text-align: center; }
 .front .portrait { width: 5.5rem; height: 5.5rem; border-radius: 50%; object-fit: cover; margin: 0 auto 1.4rem; filter: sepia(0.25) saturate(0.8); border: 1px solid var(--rule); }
 .front h1 { margin: 0; font-weight: 400; font-size: 1.5rem; letter-spacing: 0.22em; text-transform: uppercase; }
 .front .sub { margin: 0.5rem 0 0; text-align: center; font-style: italic; color: var(--quiet); }
 .front nav { margin-top: 1.6rem; font-size: 1.05rem; line-height: 1.9; }
 .front nav a { color: var(--ink); text-decoration: none; white-space: nowrap; }
 .front nav a:hover { color: var(--plum); }
-.front nav .sep { color: var(--rule); margin: 0 0.45em; }
+.front nav .sep { color: var(--rule); margin: 0 0.1em; }
 .arrive { animation: arrive 1.4s ease-in-out 0.1s both; }
 @keyframes arrive { from { opacity: 0; } to { opacity: 1; } }
 
-main { max-width: var(--measure); margin: 0 auto; padding-top: 3rem; }
-section { scroll-margin-top: 1.5rem; }
+main { max-width: var(--measure); margin: 0 auto; }
 p { margin: 0; text-align: justify; hyphens: auto; }
 p + p { text-indent: 1.5em; }
 @media (max-width: 700px) { p { text-align: left; } }
@@ -73,28 +73,28 @@ h2 small { display: block; margin-top: 0.15rem; font-size: 1.05rem; letter-spaci
 @supports not ((initial-letter: 2) or (-webkit-initial-letter: 2)) {
   .lead::first-letter { float: left; font-size: 3.15em; line-height: 0.82; padding: 0.06em 0.1em 0 0; }
 }
-.break { text-align: center; color: var(--quiet); margin: 2.6rem 0; font-size: 1.2rem; letter-spacing: 0.6em; text-indent: 0.6em; }
 .on { text-indent: 0; text-align: right; font-style: italic; margin-top: 0.6rem; }
 
 figure { margin: 1.6rem auto; }
 figure.book { max-width: 24rem; }
 figure.pic { max-width: 28rem; }
-figure img { border-radius: 2px; box-shadow: 0 1px 6px rgba(59, 47, 36, .1); }
+figure img { margin-inline: auto; width: auto; max-height: 50svh; border-radius: 2px; box-shadow: 0 1px 6px rgba(59, 47, 36, .1); }
 figure.book img { box-shadow: none; }
 figcaption { text-align: center; font-style: italic; color: var(--quiet); font-size: 0.95rem; margin-top: 0.5rem; text-wrap: balance; }
 .phones { display: flex; justify-content: center; gap: clamp(0.6rem, 2.5vw, 1.1rem); }
-.phones img { width: min(30%, 9rem); border-radius: 12px; border: 1px solid var(--rule); }
-.phones.two img { width: min(40%, 10rem); }
+.phones img { width: auto; height: min(44svh, 19rem, calc((100vw - 4rem) / 3 * 2.17)); max-height: none; margin: 0; border-radius: 12px; border: 1px solid var(--rule); }
+.phones.two img { height: min(44svh, 18rem, calc((100vw - 3.5rem) / 2 * 1.78)); }
 
-/* The day job: a few headline roles */
-.roles { list-style: none; margin: 1rem 0 0; padding: 0; text-align: center; line-height: 1.8; }
-.roles li { margin-bottom: 0.5rem; line-height: 1.35; }
-.roles span { display: block; color: var(--quiet); font-style: italic; font-size: 1rem; }
+/* The day job: the roles, years to the left */
+.roles { margin: 1.2rem auto 0; border-collapse: collapse; font-size: 1.05rem; line-height: 1.35; }
+.roles td { padding: 0.32rem 0; vertical-align: baseline; }
+.roles td:first-child { color: var(--quiet); text-align: right; padding-right: 1rem; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.roles b { font-weight: 500; }
 #work .summary, #work .cv { text-align: center; text-indent: 0; }
 #work .cv { margin-top: 1.2rem; }
-
-footer { max-width: var(--measure); margin: 3.5rem auto 0; padding: 2rem 0 4rem; text-align: center; border-top: 1px solid var(--rule); }
-footer p { margin: 0.3rem 0; text-align: center; }
+@media (max-height: 700px) { .roles td { padding-block: 0.15rem; } #work footer { margin-top: 1.6rem; } }
+footer { margin-top: 3rem; padding-top: 1.6rem; border-top: 1px solid var(--rule); text-align: center; }
+footer p { margin: 0.3rem 0; text-align: center; overflow-wrap: anywhere; }
 footer .sep { color: var(--rule); margin: 0 0.45em; }
 @media (max-width: 480px) { footer .sep:first-of-type { display: block; height: 0; overflow: hidden; } }
 @media (prefers-reduced-motion: reduce) { .arrive { animation: none; } html { scroll-behavior: auto; } }
@@ -102,17 +102,17 @@ footer .sep { color: var(--rule); margin: 0 0.45em; }
 </head>
 <body>
 
-<header class="front arrive">
+<header class="front page arrive">
   <img class="portrait" src="/profile.jpeg" alt="Adam Clements" width="88" height="88">
   <h1>Adam Clements</h1>
   <p class="sub">Director of Engineering at <a href="#work">Stream</a>. London.</p>
   <nav aria-label="Contents">
-    <a href="#perfect-day">Perfect Day</a><span class="sep">·</span><a href="#glance">Glance</a><span class="sep">·</span><a href="#freecell">FreeCell</a><span class="sep">·</span><a href="#tabula-rasa">Tabula Rasa</a><span class="sep">·</span><a href="#work">Work</a>
+    <a href="#perfect-day">Perfect Day</a> <span class="sep">·</span> <a href="#glance">Glance</a> <span class="sep">·</span> <a href="#freecell">FreeCell</a> <span class="sep">·</span> <a href="#tabula-rasa">Tabula Rasa</a> <span class="sep">·</span> <a href="#work">Work</a>
   </nav>
 </header>
 
 <main>
-  <section id="perfect-day">
+  <section class="page" id="perfect-day">
     <h2>Perfect Day<small>for Mac, Windows, Linux and Android</small></h2>
     <p class="lead">A writing app for novels and screenplays that sets the page as you type, so the manuscript already reads like the printed book.</p>
     <figure class="book">
@@ -121,9 +121,7 @@ footer .sep { color: var(--rule); margin: 0 0.45em; }
     <p class="on"><a href="https://perfectdaywriter.com">perfectdaywriter.com</a></p>
   </section>
 
-  <div class="break" aria-hidden="true">❦</div>
-
-  <section id="glance">
+  <section class="page" id="glance">
     <h2>Glance<small>a home screen for Android</small></h2>
     <p class="lead">An Android home screen that puts today’s screen time over a garden. The garden grows when you’re off your phone and loses a plant for every hour over your daily aim. Time-wasting apps cost a plant to open.</p>
     <figure>
@@ -136,9 +134,7 @@ footer .sep { color: var(--rule); margin: 0 0.45em; }
     <p class="on">Coming soon to Google Play · <a href="/glance/">more about Glance</a></p>
   </section>
 
-  <div class="break" aria-hidden="true">❦</div>
-
-  <section id="freecell">
+  <section class="page" id="freecell">
     <h2>FreeCell<small>for Android</small></h2>
     <p class="lead">Classic FreeCell solitaire with no adverts, no tracking and no internet access. The 32,000 numbered deals, and undo back to the start.</p>
     <figure>
@@ -150,9 +146,7 @@ footer .sep { color: var(--rule); margin: 0 0.45em; }
     <p class="on"><a href="/freecell/">more about FreeCell</a></p>
   </section>
 
-  <div class="break" aria-hidden="true">❦</div>
-
-  <section id="tabula-rasa">
+  <section class="page" id="tabula-rasa">
     <h2>Tabula Rasa<small>a game, unfinished</small></h2>
     <p class="lead">A real-time strategy game where you program your units instead of commanding them. Each runs its own virtual machine; you win by writing code that coordinates them. Work in progress.</p>
     <figure class="pic">
@@ -161,23 +155,24 @@ footer .sep { color: var(--rule); margin: 0 0.45em; }
     <p class="on"><a href="https://tabula-rasa.online">tabula-rasa.online</a></p>
   </section>
 
-  <div class="break" aria-hidden="true">❦</div>
-
-  <section id="work">
+  <section class="page" id="work">
     <h2>Work</h2>
     <p class="summary">Engineering and product leader. Experienced CTO and CPTO, taking products from prototype to scale in regulated healthcare and finance.</p>
-    <ul class="roles">
-      <li>Director of Engineering, Stream<span>2025 to now</span></li>
-      <li>Chief Technology Officer, Doccla<span>2022 to 2025</span></li>
-      <li>Head of Engineering, Eva HealthTech<span>2020 to 2022</span></li>
-      <li>R&amp;D Engineering Lead, SwiftKey<span>2011 to 2015</span></li>
-    </ul>
+    <table class="roles">
+      <tr><td>2025–</td><td>Director of Engineering, <b>Stream</b></td></tr>
+      <tr><td>2022–25</td><td>Chief Technology Officer, <b>Doccla</b></td></tr>
+      <tr><td>2020–22</td><td>Head of Engineering, <b>Eva HealthTech</b></td></tr>
+      <tr><td>2019–20</td><td>CTO and Co-Founder, <b>Highliner Technology</b></td></tr>
+      <tr><td>2015–17</td><td>CTO, <b>Functional Works</b></td></tr>
+      <tr><td>2011–15</td><td>R&amp;D Engineering Lead, <b>SwiftKey</b></td></tr>
+      <tr><td>2009–11</td><td>CTO, <b>LamasaTech</b></td></tr>
+    </table>
     <p class="cv"><a href="/cv/">The full CV</a></p>
+    <footer>
+      <p><a href="mailto:adam.clements@gmail.com">adam.clements@gmail.com</a><span class="sep">·</span><a href="https://www.linkedin.com/in/adam-clements-89b3ab19/">LinkedIn</a><span class="sep">·</span><a href="https://github.com/AdamClements">GitHub</a></p>
+    </footer>
   </section>
 </main>
 
-<footer>
-  <p><a href="mailto:adam.clements@gmail.com">adam.clements@gmail.com</a><span class="sep">·</span><a href="https://www.linkedin.com/in/adam-clements-89b3ab19/">LinkedIn</a><span class="sep">·</span><a href="https://github.com/AdamClements">GitHub</a></p>
-</footer>
 </body>
 </html>
