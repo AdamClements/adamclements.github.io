@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
 <style>
-/* Layout: the home page's manuscript style, in the garden's green. A title with the icon, the three screens, then how it works as two short lists. */
+/* Layout: the home page's manuscript style, in the garden's green. A title, then the three things that make Glance different, each a screen and a line. Side by side on a wide screen, stacked on a phone. */
 :root {
   --paper: #f8f1e3; --ink: #3b2f24; --quiet: #8a7860; --rule: #c9b99c; --accent: #4d6b3c;
   --serif: "EB Garamond", Garamond, "Times New Roman", serif;
@@ -35,16 +35,21 @@ h1 { margin: 0; font-weight: 400; font-size: 1.5rem; letter-spacing: 0.22em; tex
 .top .sub { margin: 0.4rem 0 0; font-style: italic; color: var(--quiet); }
 .top .what { margin: 1.4rem auto 0; max-width: 28rem; text-wrap: balance; }
 .top .soon { margin-top: 1rem; font-style: italic; color: var(--accent); }
-.phones { display: flex; justify-content: center; gap: clamp(0.6rem, 2.5vw, 1.2rem); margin: 2.4rem 0 0; }
-.phones figure { margin: 0; width: min(31%, 11rem); }
-.phones img { border-radius: 12px; border: 1px solid var(--rule); box-shadow: 0 1px 6px rgba(59, 47, 36, .08); }
-.phones figcaption { margin-top: 0.5rem; text-align: center; font-size: 0.95rem; font-style: italic; color: var(--quiet); line-height: 1.3; }
-h2 { margin: 3rem 0 1rem; text-align: center; font-weight: 400; font-size: 1rem; letter-spacing: 0.24em; text-transform: uppercase; }
-ul { margin: 0; padding: 0; list-style: none; }
-li { position: relative; padding-left: 1.2rem; margin-bottom: 0.55rem; }
-li::before { content: "–"; position: absolute; left: 0; color: var(--quiet); }
+.points { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.6rem; margin: 2.6rem 0 0; }
+.point img { width: 100%; max-width: 12rem; margin: 0 auto; border-radius: 12px; border: 1px solid var(--rule); box-shadow: 0 1px 6px rgba(59, 47, 36, .08); }
+.point h2 { margin: 1rem 0 0.3rem; font-weight: 400; font-size: 1.15rem; font-style: italic; text-align: center; }
+.point p { margin: 0; text-align: center; font-size: 1.05rem; line-height: 1.45; color: var(--ink); text-wrap: balance; }
+@media (max-width: 640px) {
+  .points { grid-template-columns: 1fr; gap: 1.8rem; }
+  .point { display: grid; grid-template-columns: 42% 1fr; gap: 1.1rem; align-items: center; }
+  .point img { max-width: none; }
+  .point h2, .point p { text-align: left; }
+  .point h2 { margin-top: 0; }
+}
+.small { margin-top: 2.6rem; text-align: center; font-style: italic; color: var(--quiet); text-wrap: balance; }
 footer { margin-top: 3rem; padding-top: 1.4rem; border-top: 1px solid var(--rule); text-align: center; font-size: 1.05rem; }
 footer .sep { color: var(--rule); margin: 0 0.4em; }
+footer a { white-space: nowrap; }
 </style>
 </head>
 <body>
@@ -55,40 +60,26 @@ footer .sep { color: var(--rule); margin: 0 0.4em; }
     <img class="icon" src="icon.png" alt="" width="88" height="88">
     <h1>Glance</h1>
     <p class="sub">Screen Time Garden, for Android</p>
-    <p class="what">A home screen that shows today’s screen time over a garden. The garden grows when you’re off your phone and dies back when you’re on it.</p>
+    <p class="what">Your screen time, over a garden that grows when you put your phone down.</p>
     <p class="soon">Coming soon to Google Play</p>
   </header>
 
-  <div class="phones">
-    <figure><img src="screen-1.webp" alt="Glance’s home screen: today’s time over a garden in summer" width="540" height="1170"><figcaption>A good day</figcaption></figure>
-    <figure><img src="screen-3.webp" alt="A long day: a storm over the garden" width="540" height="1170"><figcaption>A long one</figcaption></figure>
-    <figure><img src="screen-2.webp" alt="Opening a time-waster asks you to cut down a hollyhock" width="540" height="1170"><figcaption>Opening a time-waster</figcaption></figure>
+  <div class="points">
+    <section class="point">
+      <img src="screen-1.webp" alt="Glance’s home screen: 42 minutes today, over a garden in summer" width="540" height="1170">
+      <div><h2>It follows your week</h2><p>Use your phone less and the garden grows. Use it more and it dies back.</p></div>
+    </section>
+    <section class="point">
+      <img src="screen-3.webp" alt="Two and a half hours today: a storm over the garden" width="540" height="1170">
+      <div><h2>The weather is today</h2><p>Clear skies, then rain once you pass your aim, and a storm at twice it.</p></div>
+    </section>
+    <section class="point">
+      <img src="screen-2.webp" alt="Opening a time-waster asks you to cut down a hollyhock" width="540" height="1170">
+      <div><h2>Time-wasters cost a plant</h2><p>However they open: from a notification, a link or recent apps.</p></div>
+    </section>
   </div>
 
-  <h2>The garden</h2>
-  <ul>
-    <li>It starts half-grown. Your past week, against your usual day before Glance, decides whether it grows or dies back.</li>
-    <li>Each day has an aim, a little under your usual day. Each time you beat it, the next one steps down, until it’s an hour.</li>
-    <li>Each hour past the aim cuts down a plant. It grows back after about a day off your phone.</li>
-    <li>Nothing grows at night, but time on your phone at night still counts.</li>
-    <li>The weather is today: clear skies, then rain past your aim, a storm at twice it. The season is your trend.</li>
-    <li>Days under your aim earn seeds. You choose the flower and where it goes.</li>
-    <li>Robins, bees, butterflies, rabbits, hedgehogs, deer and fireflies come to a garden that’s doing well.</li>
-  </ul>
-
-  <h2>The home screen</h2>
-  <ul>
-    <li>Up to five apps on the home screen. Swipe up for the rest, with the keyboard ready.</li>
-    <li>Messages, maps, music and other useful apps can be set not to count.</li>
-    <li>Time-wasters sit at the bottom of the list, and each costs a plant to open, however it opens: from the list, a notification, a link or recent apps.</li>
-  </ul>
-
-  <h2>Privacy</h2>
-  <ul>
-    <li>Your screen time and your list of apps stay on your phone.</li>
-    <li>It sees only which app is in front, never what’s on the screen or what you type.</li>
-    <li>Anonymous crash reports and usage counts only. No adverts, no accounts. Pay once.</li>
-  </ul>
+  <p class="small">Your screen time never leaves your phone. No adverts, no accounts. Pay once.</p>
 
   <footer><a href="/">Adam Clements</a><span class="sep">·</span><a href="privacy.html">Privacy policy</a><span class="sep">·</span><a href="mailto:adam.clements@gmail.com">adam.clements@gmail.com</a></footer>
 </div>
