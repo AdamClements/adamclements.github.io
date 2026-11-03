@@ -53,7 +53,7 @@ a:focus-visible { outline: 1px solid var(--plum); outline-offset: 3px; }
 .front { max-width: var(--measure); margin: 0 auto; padding: 4.5rem 0 0; text-align: center; }
 .front .portrait { width: 5.5rem; height: 5.5rem; border-radius: 50%; object-fit: cover; margin: 0 auto 1.4rem; filter: sepia(0.25) saturate(0.8); border: 1px solid var(--rule); }
 .front h1 { margin: 0; font-weight: 400; font-size: 1.5rem; letter-spacing: 0.22em; text-transform: uppercase; }
-.front .sub { margin: 0.5rem 0 0; font-style: italic; color: var(--quiet); }
+.front .sub { margin: 0.5rem 0 0; text-align: center; font-style: italic; color: var(--quiet); }
 .front nav { margin-top: 1.6rem; font-size: 1.05rem; line-height: 1.9; }
 .front nav a { color: var(--ink); text-decoration: none; white-space: nowrap; }
 .front nav a:hover { color: var(--plum); }
@@ -106,22 +106,16 @@ footer .sep { color: var(--rule); margin: 0 0.45em; }
 <header class="front arrive">
   <img class="portrait" src="/profile.jpeg" alt="Adam Clements" width="88" height="88">
   <h1>Adam Clements</h1>
+  <p class="sub">Director of Engineering at <a href="#work">Stream</a>. London.</p>
   <nav aria-label="Contents">
     <a href="#perfect-day">Perfect Day</a><span class="sep">·</span><a href="#glance">Glance</a><span class="sep">·</span><a href="#freecell">FreeCell</a><span class="sep">·</span><a href="#tabula-rasa">Tabula Rasa</a><span class="sep">·</span><a href="#work">Work</a>
   </nav>
 </header>
 
 <main>
-  <section id="intro">
-    <p class="lead">By day I’m Director of Engineering at Stream, a finance, payroll and banking company. Most of what we build there now goes through Claude Code and agents, and my job is making that hold up where a bug means someone gets paid the wrong amount. Before Stream I was CTO at Doccla, running NHS virtual wards, and before that I rebuilt the core of SwiftKey’s keyboard. <a href="#work">More on that below.</a></p>
-    <p>The rest of the time I make things I wanted and couldn’t find: mostly software, and once a keyboard, from the circuit board up. Some of it has turned out well enough for other people to use.</p>
-  </section>
-
-  <div class="break" aria-hidden="true">❦</div>
-
   <section id="perfect-day">
     <h2>Perfect Day<small>for Mac, Windows, Linux and Android</small></h2>
-    <p class="lead">A writing app for novels and screenplays. I wanted to write in something that already looked like the finished book, so Perfect Day sets the page while you type: real page breaks, dropped capitals, a script’s margins where a script’s margins go. When you want to read it back, you turn the page and it’s a book.</p>
+    <p class="lead">A writing app for novels and screenplays that sets the page as you type, so the manuscript already reads like the printed book.</p>
     <figure class="book">
       <img src="/img/perfectday.webp" alt="A manuscript in Perfect Day, open as a book: a marbled endpaper on the left, the page curling over to Chapter One" width="1108" height="872" loading="lazy">
     </figure>
@@ -132,7 +126,7 @@ footer .sep { color: var(--rule); margin: 0 0.45em; }
 
   <section id="glance">
     <h2>Glance<small>a home screen for Android</small></h2>
-    <p class="lead">Android’s screen time settings were too easy to wave away, so I replaced the home screen. Glance shows how long you’ve spent on your phone today over a garden drawn side-on. It grows slowly on the days you leave the phone alone and loses a plant for every hour you go over, and the apps you’ve marked as time-wasters won’t open until you’ve cut something down. It turns out to be much harder to ignore a hollyhock than a notification.</p>
+    <p class="lead">An Android home screen that puts today’s screen time over a garden. The garden grows when you’re off your phone and loses a plant for every hour over your daily aim. Time-wasting apps cost a plant to open.</p>
     <figure>
       <div class="phones">
         <img src="/glance/screen-3.webp" alt="A long day: a storm over the garden" width="540" height="1170" loading="lazy">
@@ -147,7 +141,7 @@ footer .sep { color: var(--rule); margin: 0 0.45em; }
 
   <section id="freecell">
     <h2>FreeCell<small>for Android</small></h2>
-    <p class="lead">Every FreeCell I tried put a full-screen advert between games. This one has no adverts and doesn’t even ask for the internet. It deals the 32,000 numbered games, so game 1234 is the same one here as anywhere else, and undo goes all the way back to the deal.</p>
+    <p class="lead">Classic FreeCell solitaire with no adverts, no tracking and no internet access. The 32,000 numbered deals, and undo back to the start.</p>
     <figure>
       <div class="phones two">
         <img src="/freecell/screen-1.webp" alt="FreeCell: a fresh deal" width="540" height="960" loading="lazy">
@@ -161,7 +155,7 @@ footer .sep { color: var(--rule); margin: 0 0.45em; }
 
   <section id="tabula-rasa">
     <h2>Tabula Rasa<small>a game, unfinished</small></h2>
-    <p class="lead">A strategy game where you don’t command your units, you program them. Each one runs its own small virtual machine and talks to the others by radio, so winning comes down to writing code that gets them to work together. Underneath are a compiler and interpreter for its machine code and a 3D engine written from scratch. The teaser site is the terminal you start at.</p>
+    <p class="lead">A real-time strategy game where you program your units instead of commanding them. Each runs its own virtual machine; you win by writing code that coordinates them. Work in progress.</p>
     <figure class="pic">
       <img src="/img/tabula.webp" alt="The Tabula Rasa teaser: an old terminal in the ruins, its green menu offering Transmissions, the Operator’s Manual and the software" width="1140" height="760" loading="lazy">
     </figure>
@@ -171,8 +165,8 @@ footer .sep { color: var(--rule); margin: 0 0.45em; }
   <div class="break" aria-hidden="true">❦</div>
 
   <section id="work">
-    <h2>Work<small>seventeen years, from prototype to scale</small></h2>
-    <p class="lead">I lead engineering teams and still write code. I’ve been a startup CTO four times, put AI voice systems into NHS clinics, and shipped software used by hundreds of millions of people.</p>
+    <h2>Work</h2>
+    <p class="lead">Seventeen years taking products from prototype to scale. Startup CTO four times.</p>
     <table class="roles">
       <tr><td>2025–</td><td><b>Director of Engineering, Stream</b><span>Building production systems through Claude Code and agents, in finance, payroll and banking.</span></td></tr>
       <tr><td>2025</td><td><b>Technical Advisor, Tortus AI</b><span>Technical strategy for AI clinical documentation used by NHS clinicians.</span></td></tr>
