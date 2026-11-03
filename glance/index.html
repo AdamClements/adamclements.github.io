@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Glance: Screen Time Garden</title>
+<meta name="description" content="An Android home screen that puts today's screen time front and centre, over a garden that grows when you're on your phone less.">
+<meta property="og:title" content="Glance: Screen Time Garden">
+<meta property="og:description" content="An Android home screen that puts today's screen time front and centre, over a garden that grows when you're on your phone less.">
+<meta property="og:image" content="https://adam-clements.com/glance/screen-1.webp">
+<link rel="icon" href="icon.png">
+<style>
+  :root { --soil: #3e2c21; --soil-dark: #2c1f17; --leaf: #3f7d3a; --ink: #23301f; --muted: #5d6b58; --paper: #f6f8f2; --line: #dde5d6; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: var(--ink); background: var(--paper); line-height: 1.6; }
+  header {
+    background: linear-gradient(180deg, #7fa6c9 0%, #d9d3cf 52%, #8fb36f 52%, #5f8a45 78%, var(--soil) 78%, var(--soil-dark) 100%);
+    color: #fff; padding: 56px 20px 120px; text-align: center;
+  }
+  header img.icon { width: 96px; height: 96px; border-radius: 22px; box-shadow: 0 6px 20px rgba(0,0,0,.3); }
+  h1 { font-size: clamp(2.1rem, 6vw, 3.3rem); margin: 18px 0 6px; letter-spacing: -.02em; text-shadow: 0 2px 12px rgba(0,0,0,.3); }
+  .tag { font-size: 1.2rem; margin: 0 auto 26px; max-width: 34em; text-shadow: 0 1px 8px rgba(0,0,0,.4); }
+  .badge { display: inline-block; margin: 4px; font-weight: 700; padding: 12px 22px; border-radius: 12px; text-decoration: none;
+           background: rgba(44,31,23,.55); color: #fff; border: 1px solid rgba(255,255,255,.45); }
+  main { max-width: 920px; margin: 0 auto; padding: 0 20px 60px; }
+  .shots { display: flex; gap: min(16px, 3vw); justify-content: center; margin: -96px auto 40px; }
+  .shots img { width: min(240px, 30vw); height: auto; border-radius: min(18px, 3vw); box-shadow: 0 10px 30px rgba(0,0,0,.25); background: var(--soil); }
+  h2 { font-size: 1.4rem; margin: 36px 0 10px; }
+  ul { padding-left: 1.2em; }
+  li { margin: 6px 0; }
+  .promise { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin: 10px 0 0; }
+  .promise div { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
+  .promise b { display: block; font-size: 1.05rem; color: var(--leaf); }
+  footer { border-top: 1px solid var(--line); padding: 22px 20px 40px; text-align: center; color: var(--muted); font-size: .9rem; }
+  footer a { color: var(--muted); }
+</style>
+</head>
+<body>
+<header>
+  <img class="icon" src="icon.png" alt="">
+  <h1>Glance: Screen Time Garden</h1>
+  <p class="tag">A home screen for Android that shows how long you've been on your phone today, over a garden that grows when you use it less.</p>
+  <span class="badge">Coming soon to Google Play</span>
+</header>
+<main>
+  <div class="shots">
+    <img src="screen-1.webp" alt="The home screen: today's time over a garden in full summer at dawn" width="540" height="1170">
+    <img src="screen-2.webp" alt="Opening a time-waster asks you to cut down a hollyhock first" width="540" height="1170">
+    <img src="screen-3.webp" alt="A long day on the phone: the number turns red and a storm comes in" width="540" height="1170">
+  </div>
+
+  <div class="promise">
+    <div><b>Your time, front and centre</b>Today's screen time is the first thing you see each time you pick up your phone.</div>
+    <div><b>A garden that answers you</b>Use your phone less than you used to and it grows. Use it more and it dies back.</div>
+    <div><b>Stays on your phone</b>Your screen time and your apps never leave it. No adverts, no accounts.</div>
+  </div>
+
+  <h2>How the garden works</h2>
+  <ul>
+    <li>It starts half-grown. Your past week, against your usual day before Glance, decides whether it grows or dies back.</li>
+    <li>Each day has an aim. It starts a tenth under your usual day, and each time you beat it the next one steps down, until it's an hour.</li>
+    <li>Each hour past today's aim cuts down a plant. It grows back after about a day off your phone.</li>
+    <li>Nothing grows in the dark, so a night's sleep earns nothing. Time on your phone at night still counts.</li>
+    <li>The weather is today: clear skies early on, rain past your aim, a storm at twice it. The season is your trend, and summer can last for ever.</li>
+    <li>Days under your aim earn seeds. You choose the flower and where it goes.</li>
+    <li>Robins, bees, butterflies, rabbits, hedgehogs, deer and fireflies come to a garden that's doing well.</li>
+  </ul>
+
+  <h2>A home screen with fewer distractions</h2>
+  <ul>
+    <li>Up to five tools on the home screen, camera first. Swipe up for all your apps, with the keyboard ready.</li>
+    <li>Sort your apps into three groups. Useful ones, like messages, maps and music, don't count towards your time.</li>
+    <li>Time-wasters sit folded away at the bottom of the list, and each one costs a plant to open.</li>
+    <li>The garden asks first however a time-waster opens: from a notification, a link or recent apps. It only sees which app is in front, never what's on the screen.</li>
+  </ul>
+
+  <h2>Why</h2>
+  <p>I wanted to spend less time on my phone, and blocking apps never stuck. A garden I'd have to cut down to open them works better.</p>
+</main>
+<footer>
+  Made by <a href="/">Adam Clements</a> · <a href="privacy.html">Privacy policy</a>
+</footer>
+</body>
+</html>
