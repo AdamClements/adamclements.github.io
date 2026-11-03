@@ -33,206 +33,158 @@ gtag('config', 'AW-699864087');
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Courier+Prime&display=swap" rel="stylesheet">
 <style>
-/* Layout: the site as a small book. A title page with its contents, then a chapter for each thing made, then the day job, then a colophon. One measure, set the way Perfect Day sets a manuscript. */
+/* Layout: one continuous manuscript, set the way Perfect Day sets a page. A short title, a run-in introduction (the day job), then each thing made as a section of the same text, parted by a fleuron. */
 :root {
-  --paper: #f8f1e3; --parchment: #f1e6cf; --ink: #3b2f24; --quiet: #8a7860; --rule: #c9b99c; --plum: #733e62;
+  --paper: #f8f1e3; --ink: #3b2f24; --quiet: #8a7860; --rule: #c9b99c; --plum: #733e62;
   --serif: "EB Garamond", Garamond, "Times New Roman", serif;
-  --type: "Courier Prime", "Courier New", monospace;
-  --measure: 34rem;
+  --measure: 33rem;
   color-scheme: light;
 }
 * { box-sizing: border-box; }
 html { background: var(--paper); -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
-body { margin: 0; padding-left: max(1.25rem, env(safe-area-inset-left)); padding-right: max(1.25rem, env(safe-area-inset-right));
+body { margin: 0; padding: 0 max(1.25rem, env(safe-area-inset-right)) 0 max(1.25rem, env(safe-area-inset-left));
   background: var(--paper); color: var(--ink); font: 1.2rem/1.6 var(--serif); font-feature-settings: "kern", "liga", "onum"; }
 img { max-width: 100%; height: auto; display: block; }
 a { color: var(--plum); text-decoration-thickness: 1px; text-underline-offset: 0.15em; }
 a:focus-visible { outline: 1px solid var(--plum); outline-offset: 3px; }
-.sc { font-variant: small-caps; font-feature-settings: "smcp", "kern"; letter-spacing: 0.08em; }
+.sc { font-variant: small-caps; font-feature-settings: "smcp", "kern"; letter-spacing: 0.06em; }
 
-/* The title page */
-.front { min-height: 92svh; display: grid; place-items: center; text-align: center; padding-block: 4rem 3rem; }
-.front .name { font-size: 1.1rem; color: var(--quiet); }
-.front h1 { margin: 1.2rem 0 0; font-weight: 400; font-size: clamp(2.6rem, 8vw, 4.8rem); line-height: 1.05; text-wrap: balance; }
-.front .sub { margin: 1.2rem auto 0; font-style: italic; color: var(--quiet); font-size: 1.3rem; max-width: 27rem; text-wrap: balance; }
-.front .portrait { width: 7.5rem; height: 7.5rem; border-radius: 50%; object-fit: cover; margin: 0 auto 2.2rem; filter: sepia(0.25) saturate(0.8); border: 1px solid var(--rule); }
-.arrive { animation: arrive 1.6s ease-in-out 0.2s both; }
+/* The title */
+.front { max-width: var(--measure); margin: 0 auto; padding: 4.5rem 0 0; text-align: center; }
+.front .portrait { width: 5.5rem; height: 5.5rem; border-radius: 50%; object-fit: cover; margin: 0 auto 1.4rem; filter: sepia(0.25) saturate(0.8); border: 1px solid var(--rule); }
+.front h1 { margin: 0; font-weight: 400; font-size: 1.5rem; letter-spacing: 0.22em; text-transform: uppercase; }
+.front .sub { margin: 0.5rem 0 0; font-style: italic; color: var(--quiet); }
+.front nav { margin-top: 1.6rem; font-size: 1.05rem; line-height: 1.9; }
+.front nav a { color: var(--ink); text-decoration: none; white-space: nowrap; }
+.front nav a:hover { color: var(--plum); }
+.front nav .sep { color: var(--rule); margin: 0 0.45em; }
+.arrive { animation: arrive 1.4s ease-in-out 0.1s both; }
 @keyframes arrive { from { opacity: 0; } to { opacity: 1; } }
 
-/* Contents, with dotted leaders to the chapter numbers */
-.contents { max-width: 24rem; margin: 3.6rem auto 0; text-align: left; }
-.contents h2 { text-align: center; font-weight: 400; font-size: 0.95rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--quiet); margin: 0 0 1rem; }
-.contents ol { list-style: none; margin: 0; padding: 0; }
-.contents li a { display: flex; align-items: baseline; gap: 0.4rem; text-decoration: none; color: var(--ink); padding: 0.18rem 0; }
-.contents li a::after { content: ""; order: 2; flex: 1; border-bottom: 1px dotted var(--rule); transform: translateY(-0.3em); }
-.contents li a .n { order: 3; color: var(--quiet); }
-.contents li a .t { order: 1; }
-.contents li a:hover .t { color: var(--plum); }
-
-main { max-width: var(--measure); margin: 0 auto; }
-.chapter { padding-block: 5.5rem 1.5rem; }
-.chapter > header { text-align: center; margin-bottom: 2.5rem; }
-.chapter .number { font-size: 0.9rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--quiet); }
-.chapter h2 { margin: 0.3rem 0 0; font-weight: 400; font-style: italic; font-size: 1.9rem; text-wrap: balance; }
-.chapter .where { margin-top: 0.4rem; font-size: 1rem; color: var(--quiet); }
-.chapter p { margin: 0; text-align: justify; hyphens: auto; }
-.chapter p + p { text-indent: 1.5em; }
-.chapter p.lead::first-line { font-variant: small-caps; font-feature-settings: "smcp"; }
-.chapter p.lead::first-letter { -webkit-initial-letter: 2; initial-letter: 2; margin-right: 0.12em; font-variant: normal; color: var(--plum); }
+main { max-width: var(--measure); margin: 0 auto; padding-top: 3rem; }
+section { scroll-margin-top: 1.5rem; }
+p { margin: 0; text-align: justify; hyphens: auto; }
+p + p { text-indent: 1.5em; }
+@media (max-width: 700px) { p { text-align: left; } }
+h2 { margin: 0 0 0.9rem; font-weight: 400; font-size: 1rem; letter-spacing: 0.24em; text-transform: uppercase; text-align: center; }
+h2 small { display: block; margin-top: 0.15rem; font-size: 1.05rem; letter-spacing: 0; text-transform: none; font-style: italic; color: var(--quiet); }
+.lead::first-line { font-variant: small-caps; font-feature-settings: "smcp"; }
+.lead::first-letter { -webkit-initial-letter: 2; initial-letter: 2; margin-right: 0.1em; font-variant: normal; color: var(--plum); }
 @supports not ((initial-letter: 2) or (-webkit-initial-letter: 2)) {
-  .chapter p.lead::first-letter { float: left; font-size: 3.15em; line-height: 0.82; padding: 0.06em 0.1em 0 0; }
+  .lead::first-letter { float: left; font-size: 3.15em; line-height: 0.82; padding: 0.06em 0.1em 0 0; }
 }
-@media (max-width: 700px) { .chapter p { text-align: left; } }
-.chapter p.onward { text-indent: 0; text-align: center; margin-top: 1.8rem; font-style: italic; }
+.break { text-align: center; color: var(--quiet); margin: 2.6rem 0; font-size: 1.2rem; letter-spacing: 0.6em; text-indent: 0.6em; }
+.on { text-indent: 0; text-align: right; font-style: italic; margin-top: 0.6rem; }
 
-figure { margin: 2.4rem 0; }
-figure.wide { margin-inline: calc(50% - min(48vw, 40rem)); }
-@media (max-width: 700px) { figure.wide { margin-inline: 0; } }
-figure.wide img { margin-inline: auto; }
-figure img { border: 1px solid var(--rule); border-radius: 3px; box-shadow: 0 1px 6px rgba(59, 47, 36, .08); }
-figcaption { text-align: center; font-style: italic; color: var(--quiet); font-size: 1rem; margin-top: 0.7rem; text-wrap: balance; }
-.phones { display: flex; justify-content: center; gap: clamp(0.6rem, 2.5vw, 1.4rem); }
-.phones img { width: min(30%, 11.5rem); border-radius: 14px; }
-.phones.two img { width: min(42%, 12.5rem); }
+figure { margin: 1.6rem auto; }
+figure.book { max-width: 24rem; }
+figure.pic { max-width: 28rem; }
+figure img { border-radius: 2px; box-shadow: 0 1px 6px rgba(59, 47, 36, .1); }
+figure.book img { box-shadow: none; }
+figcaption { text-align: center; font-style: italic; color: var(--quiet); font-size: 0.95rem; margin-top: 0.5rem; text-wrap: balance; }
+.phones { display: flex; justify-content: center; gap: clamp(0.6rem, 2.5vw, 1.1rem); }
+.phones img { width: min(30%, 9rem); border-radius: 12px; border: 1px solid var(--rule); }
+.phones.two img { width: min(40%, 10rem); }
 
-/* The day job, set as a table, like Perfect Day's list of keys */
-.roles { margin: 2rem 0 0; border-collapse: collapse; width: 100%; font-size: 1.05rem; }
-.roles td { padding: 0.55rem 0.5rem; border-bottom: 1px solid var(--rule); vertical-align: top; }
+/* The day job, as a ruled list */
+.roles { margin: 1.4rem 0 0; border-collapse: collapse; width: 100%; font-size: 1.05rem; }
+.roles td { padding: 0.5rem 0.5rem; border-bottom: 1px solid var(--rule); vertical-align: top; }
 .roles tr:first-child td { border-top: 1px solid var(--rule); }
 .roles td:first-child { white-space: nowrap; width: 1%; color: var(--quiet); padding-left: 0; }
 .roles td:last-child { padding-right: 0; }
 .roles b { font-weight: 500; }
 .roles span { display: block; color: var(--quiet); font-size: 1rem; line-height: 1.45; }
 
-/* The colophon */
-.colophon { max-width: var(--measure); margin: 4rem auto 0; padding-block: 3rem 5rem; text-align: center; border-top: 1px solid var(--rule); }
-.colophon .fleuron { color: var(--quiet); margin: 0 0 1.4rem; font-size: 1.4rem; }
-.colophon p { margin: 0.4rem 0; }
-.colophon .links { margin-top: 1rem; line-height: 2; }
-.colophon .links .sep { display: inline-block; margin: 0 0.5em; color: var(--rule); }
-.colophon .set { margin-top: 2.4rem; font-size: 0.95rem; font-style: italic; color: var(--quiet); }
+footer { max-width: var(--measure); margin: 3.5rem auto 0; padding: 2rem 0 4rem; text-align: center; border-top: 1px solid var(--rule); }
+footer p { margin: 0.3rem 0; text-align: center; }
+footer .sep { color: var(--rule); margin: 0 0.45em; }
 @media (prefers-reduced-motion: reduce) { .arrive { animation: none; } html { scroll-behavior: auto; } }
 </style>
 </head>
 <body>
 
-<section class="front">
-  <div class="arrive">
-    <img class="portrait" src="/profile.jpeg" alt="Adam Clements" width="120" height="120">
-    <div class="name sc">Adam Clements</div>
-    <h1>Things I’ve Made</h1>
-    <p class="sub">Director of Engineering at Stream by day; apps, games and tools of my own the rest of the time.</p>
-    <nav class="contents" aria-label="Contents">
-      <h2>Contents</h2>
-      <ol>
-        <li><a href="#perfect-day"><span class="t">Perfect Day</span><span class="n">i</span></a></li>
-        <li><a href="#glance"><span class="t">Glance</span><span class="n">ii</span></a></li>
-        <li><a href="#freecell"><span class="t">FreeCell</span><span class="n">iii</span></a></li>
-        <li><a href="#tabula-rasa"><span class="t">Tabula Rasa</span><span class="n">iv</span></a></li>
-        <li><a href="#keyboard"><span class="t">A Keyboard of My Own</span><span class="n">v</span></a></li>
-        <li><a href="#day-job"><span class="t">The Day Job</span><span class="n">vi</span></a></li>
-      </ol>
-    </nav>
-  </div>
-</section>
+<header class="front arrive">
+  <img class="portrait" src="/profile.jpeg" alt="Adam Clements" width="88" height="88">
+  <h1>Adam Clements</h1>
+  <nav aria-label="Contents">
+    <a href="#perfect-day">Perfect Day</a><span class="sep">·</span><a href="#glance">Glance</a><span class="sep">·</span><a href="#freecell">FreeCell</a><span class="sep">·</span><a href="#tabula-rasa">Tabula Rasa</a><span class="sep">·</span><a href="#work">Work</a>
+  </nav>
+</header>
 
 <main>
-  <article class="chapter" id="perfect-day">
-    <header>
-      <div class="number">Chapter One</div>
-      <h2>Perfect Day</h2>
-      <div class="where">for Mac, Windows, Linux and Android</div>
-    </header>
-    <p class="lead">Perfect Day is a calm, keyboard-first place to write novels and screenplays. The screen breaks lines and pages exactly where the printed page will, so what you write is already the book: chapters open with their capitals dropped, scripts sit in their proper margins, and nothing on the screen asks for your attention but the words.</p>
-    <figure class="wide">
-      <img src="/img/perfectday.webp" alt="A chapter being written in Perfect Day, set as the printed page" width="1200" height="675" loading="lazy">
-      <figcaption>A chapter as you write it, and as it will print.</figcaption>
-    </figure>
-    <p class="onward"><a href="https://perfectdaywriter.com">perfectdaywriter.com</a></p>
-  </article>
+  <section id="intro">
+    <p class="lead">By day I’m Director of Engineering at Stream, a finance, payroll and banking company. Most of what we build there now goes through Claude Code and agents, and my job is making that hold up where a bug means someone gets paid the wrong amount. Before Stream I was CTO at Doccla, running NHS virtual wards, and before that I rebuilt the core of SwiftKey’s keyboard. <a href="#work">More on that below.</a></p>
+    <p>The rest of the time I make things I wanted and couldn’t find: mostly software, and once a keyboard, from the circuit board up. Some of it has turned out well enough for other people to use.</p>
+  </section>
 
-  <article class="chapter" id="glance">
-    <header>
-      <div class="number">Chapter Two</div>
-      <h2>Glance</h2>
-      <div class="where">a home screen for Android</div>
-    </header>
-    <p class="lead">Glance puts today’s screen time front and centre, over a hand-drawn garden that follows your week. Use your phone less than you used to and the garden grows; use it more and it dies back. Each hour past the day’s aim costs a plant, and a time-waster has to cut one down before it will open.</p>
-    <p>The weather is today and the season is the trend. Robins and bees come to a garden that’s doing well, and at night, fireflies.</p>
+  <div class="break" aria-hidden="true">❦</div>
+
+  <section id="perfect-day">
+    <h2>Perfect Day<small>for Mac, Windows, Linux and Android</small></h2>
+    <p class="lead">A writing app for novels and screenplays. I wanted to write in something that already looked like the finished book, so Perfect Day sets the page while you type: real page breaks, dropped capitals, a script’s margins where a script’s margins go. When you want to read it back, you turn the page and it’s a book.</p>
+    <figure class="book">
+      <img src="/img/perfectday.webp" alt="A manuscript in Perfect Day, open as a book: a marbled endpaper on the left, the page curling over to Chapter One" width="1108" height="872" loading="lazy">
+    </figure>
+    <p class="on"><a href="https://perfectdaywriter.com">perfectdaywriter.com</a></p>
+  </section>
+
+  <div class="break" aria-hidden="true">❦</div>
+
+  <section id="glance">
+    <h2>Glance<small>a home screen for Android</small></h2>
+    <p class="lead">Android’s screen time settings were too easy to wave away, so I replaced the home screen. Glance shows how long you’ve spent on your phone today over a garden drawn side-on. It grows slowly on the days you leave the phone alone and loses a plant for every hour you go over, and the apps you’ve marked as time-wasters won’t open until you’ve cut something down. It turns out to be much harder to ignore a hollyhock than a notification.</p>
     <figure>
       <div class="phones">
         <img src="/glance/screen-3.webp" alt="A long day: a storm over the garden" width="540" height="1170" loading="lazy">
         <img src="/glance/screen-1.webp" alt="Glance’s home screen: today’s time over a garden in summer" width="540" height="1170" loading="lazy">
         <img src="/glance/screen-2.webp" alt="Opening a time-waster asks you to cut down a hollyhock" width="540" height="1170" loading="lazy">
       </div>
-      <figcaption>A bad day, a good one, and the price of a time-waster.</figcaption>
     </figure>
-    <p class="onward">Coming to Google Play. <a href="/glance/">Read more about Glance</a></p>
-  </article>
+    <p class="on">Coming soon to Google Play · <a href="/glance/">more about Glance</a></p>
+  </section>
 
-  <article class="chapter" id="freecell">
-    <header>
-      <div class="number">Chapter Three</div>
-      <h2>FreeCell</h2>
-      <div class="where">for Android, and in the browser</div>
-    </header>
-    <p class="lead">The classic card game, made because the one on my phone was full of adverts. No adverts, no internet, no tracking: the numbered deals everyone knows, big clear cards with classic court pictures, and undo as far back as you like.</p>
+  <div class="break" aria-hidden="true">❦</div>
+
+  <section id="freecell">
+    <h2>FreeCell<small>for Android</small></h2>
+    <p class="lead">Every FreeCell I tried put a full-screen advert between games. This one has no adverts and doesn’t even ask for the internet. It deals the 32,000 numbered games, so game 1234 is the same one here as anywhere else, and undo goes all the way back to the deal.</p>
     <figure>
       <div class="phones two">
         <img src="/freecell/screen-1.webp" alt="FreeCell: a fresh deal" width="540" height="960" loading="lazy">
         <img src="/freecell/screen-2.webp" alt="FreeCell: a game under way" width="540" height="960" loading="lazy">
       </div>
-      <figcaption>A fresh deal, and a game under way.</figcaption>
     </figure>
-    <p class="onward"><a href="/freecell/">Read more about FreeCell</a></p>
-  </article>
+    <p class="on"><a href="/freecell/">more about FreeCell</a></p>
+  </section>
 
-  <article class="chapter" id="tabula-rasa">
-    <header>
-      <div class="number">Chapter Four</div>
-      <h2>Tabula Rasa</h2>
-      <div class="where">a game, still being written</div>
-    </header>
-    <p class="lead">A real-time strategy game in which every unit runs a virtual machine of its own, and you win by writing the code that coordinates them. Under it sit compilers and interpreters for custom machine code, radio between the units, and a 3D engine made from the ground up.</p>
-    <figure class="wide">
-      <img src="/img/tabula.webp" alt="Tabula Rasa: an old terminal glowing in the ruins" width="870" height="600">
+  <div class="break" aria-hidden="true">❦</div>
+
+  <section id="tabula-rasa">
+    <h2>Tabula Rasa<small>a game, unfinished</small></h2>
+    <p class="lead">A strategy game where you don’t command your units, you program them. Each one runs its own small virtual machine and talks to the others by radio, so winning comes down to writing code that gets them to work together. Underneath are a compiler and interpreter for its machine code and a 3D engine written from scratch. The teaser site is the terminal you start at.</p>
+    <figure class="pic">
+      <img src="/img/tabula.webp" alt="The Tabula Rasa teaser: an old terminal in the ruins, its green menu offering Transmissions, the Operator’s Manual and the software" width="1140" height="760" loading="lazy">
     </figure>
-    <p class="onward"><a href="https://tabula-rasa.online">Watch the teaser</a></p>
-  </article>
+    <p class="on"><a href="https://tabula-rasa.online">tabula-rasa.online</a></p>
+  </section>
 
-  <article class="chapter" id="keyboard">
-    <header>
-      <div class="number">Chapter Five</div>
-      <h2>A Keyboard of My Own</h2>
-    </header>
-    <p class="lead">Designed from the circuit board up, shaped to my hands and to the way I work.</p>
-  </article>
+  <div class="break" aria-hidden="true">❦</div>
 
-  <article class="chapter" id="day-job">
-    <header>
-      <div class="number">Chapter Six</div>
-      <h2>The Day Job</h2>
-      <div class="where">seventeen years, from prototype to scale</div>
-    </header>
-    <p class="lead">I lead engineering teams and stay hands-on. At Stream, a finance, payroll and banking company, I build production systems through Claude Code and agentic tooling, in a domain where correctness is not optional.</p>
-    <p>Before that I was a startup CTO four times over, put production AI voice systems into NHS healthcare, and rebuilt the core of SwiftKey’s keyboard.</p>
+  <section id="work">
+    <h2>Work<small>seventeen years, from prototype to scale</small></h2>
+    <p class="lead">I lead engineering teams and still write code. I’ve been a startup CTO four times, put AI voice systems into NHS clinics, and shipped software used by hundreds of millions of people.</p>
     <table class="roles">
-      <tr><td>2025–</td><td><b>Director of Engineering, Stream</b><span>AI-native development at production quality, in a regulated, high-stakes domain.</span></td></tr>
+      <tr><td>2025–</td><td><b>Director of Engineering, Stream</b><span>Building production systems through Claude Code and agents, in finance, payroll and banking.</span></td></tr>
       <tr><td>2025</td><td><b>Technical Advisor, Tortus AI</b><span>Technical strategy for AI clinical documentation used by NHS clinicians.</span></td></tr>
-      <tr><td>2022–25</td><td><b>Chief Technology Officer, Doccla</b><span>Joined a virtual wards company to turn it around, and rebuilt its tech team: their NPS went from −80 to +45.</span></td></tr>
+      <tr><td>2022–25</td><td><b>Chief Technology Officer, Doccla</b><span>Turned round a virtual wards company and rebuilt its tech team; its NPS went from −80 to +45.</span></td></tr>
       <tr><td>2011–15</td><td><b>R&amp;D Engineering Lead, SwiftKey</b><span>Rebuilt the core of the keyboard as a cross-platform, functional engine.</span></td></tr>
     </table>
-    <p class="onward"><a href="/cv/">The full CV</a></p>
-  </article>
+    <p class="on"><a href="/cv/">the full CV</a></p>
+  </section>
 </main>
 
-<footer class="colophon" id="contact">
-  <p class="fleuron" aria-hidden="true">❦</p>
-  <p class="sc">Correspondence</p>
-  <p class="links">
-    <a href="mailto:adam.clements@gmail.com">adam.clements@gmail.com</a><span class="sep">·</span><a href="https://www.linkedin.com/in/adam-clements-89b3ab19/">LinkedIn</a><span class="sep">·</span><a href="https://github.com/AdamClements">GitHub</a>
-  </p>
-  <p class="set">Set in EB Garamond, the way Perfect Day sets a manuscript. London.</p>
+<footer>
+  <p><a href="mailto:adam.clements@gmail.com">adam.clements@gmail.com</a><span class="sep">·</span><a href="https://www.linkedin.com/in/adam-clements-89b3ab19/">LinkedIn</a><span class="sep">·</span><a href="https://github.com/AdamClements">GitHub</a></p>
 </footer>
 </body>
 </html>
