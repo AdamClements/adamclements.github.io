@@ -86,18 +86,17 @@ figcaption { text-align: center; font-style: italic; color: var(--quiet); font-s
 .phones img { width: min(30%, 9rem); border-radius: 12px; border: 1px solid var(--rule); }
 .phones.two img { width: min(40%, 10rem); }
 
-/* The day job, as a ruled list */
-.roles { margin: 1.4rem 0 0; border-collapse: collapse; width: 100%; font-size: 1.05rem; }
-.roles td { padding: 0.5rem 0.5rem; border-bottom: 1px solid var(--rule); vertical-align: top; }
-.roles tr:first-child td { border-top: 1px solid var(--rule); }
-.roles td:first-child { white-space: nowrap; width: 1%; color: var(--quiet); padding-left: 0; }
-.roles td:last-child { padding-right: 0; }
-.roles b { font-weight: 500; }
-.roles span { display: block; color: var(--quiet); font-size: 1rem; line-height: 1.45; }
+/* The day job: a few headline roles */
+.roles { list-style: none; margin: 1rem 0 0; padding: 0; text-align: center; line-height: 1.8; }
+.roles li { margin-bottom: 0.5rem; line-height: 1.35; }
+.roles span { display: block; color: var(--quiet); font-style: italic; font-size: 1rem; }
+#work .summary, #work .cv { text-align: center; text-indent: 0; }
+#work .cv { margin-top: 1.2rem; }
 
 footer { max-width: var(--measure); margin: 3.5rem auto 0; padding: 2rem 0 4rem; text-align: center; border-top: 1px solid var(--rule); }
 footer p { margin: 0.3rem 0; text-align: center; }
 footer .sep { color: var(--rule); margin: 0 0.45em; }
+@media (max-width: 480px) { footer .sep:first-of-type { display: block; height: 0; overflow: hidden; } }
 @media (prefers-reduced-motion: reduce) { .arrive { animation: none; } html { scroll-behavior: auto; } }
 </style>
 </head>
@@ -166,14 +165,13 @@ footer .sep { color: var(--rule); margin: 0 0.45em; }
 
   <section id="work">
     <h2>Work</h2>
-    <p class="lead">Seventeen years taking products from prototype to scale. Startup CTO four times.</p>
-    <table class="roles">
-      <tr><td>2025–</td><td><b>Director of Engineering, Stream</b><span>Building production systems through Claude Code and agents, in finance, payroll and banking.</span></td></tr>
-      <tr><td>2025</td><td><b>Technical Advisor, Tortus AI</b><span>Technical strategy for AI clinical documentation used by NHS clinicians.</span></td></tr>
-      <tr><td>2022–25</td><td><b>Chief Technology Officer, Doccla</b><span>Turned round a virtual wards company and rebuilt its tech team; its NPS went from −80 to +45.</span></td></tr>
-      <tr><td>2011–15</td><td><b>R&amp;D Engineering Lead, SwiftKey</b><span>Rebuilt the core of the keyboard as a cross-platform, functional engine.</span></td></tr>
-    </table>
-    <p class="on"><a href="/cv/">the full CV</a></p>
+    <p class="summary">Seventeen years taking products from prototype to scale. Startup CTO four times.</p>
+    <ul class="roles">
+      <li>Director of Engineering, Stream<span>2025 to now</span></li>
+      <li>Chief Technology Officer, Doccla<span>2022 to 2025</span></li>
+      <li>R&amp;D Engineering Lead, SwiftKey<span>2011 to 2015</span></li>
+    </ul>
+    <p class="cv"><a href="/cv/">The full CV</a></p>
   </section>
 </main>
 
