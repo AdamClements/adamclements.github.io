@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Whereabouts: Daily Timeline</title>
+<meta name="description" content="An Android app that records where you go and how, all day, and shows each day as a line of circles. Kept on your phone.">
+<meta property="og:title" content="Whereabouts: Daily Timeline">
+<meta property="og:description" content="An Android app that records where you go and how, all day, and shows each day as a line of circles. Kept on your phone.">
+<meta property="og:image" content="https://adam-clements.com/whereabouts/feature.png">
+<link rel="icon" href="icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+/* Layout: the home page's manuscript style, in Whereabouts' paper and terracotta. A title, then the three things Whereabouts does, each a screen and a line. Its own G3 paper and terracotta. Side by side on a wide screen, stacked on a phone. */
+:root {
+  --paper: #f6f1e9; --ink: #15191e; --quiet: #5e574f; --rule: #e1d5c2; --accent: #c4532f;
+  --serif: "EB Garamond", Garamond, "Times New Roman", serif;
+  --measure: 34rem;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html { background: var(--paper); -webkit-text-size-adjust: 100%; }
+body { margin: 0; padding: 0 max(1.25rem, env(safe-area-inset-right)) 0 max(1.25rem, env(safe-area-inset-left));
+  background: var(--paper); color: var(--ink); font: 1.2rem/1.55 var(--serif); font-feature-settings: "kern", "liga", "onum"; }
+img { max-width: 100%; height: auto; display: block; }
+a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 0.15em; }
+a:focus-visible { outline: 1px solid var(--accent); outline-offset: 3px; }
+.doc { max-width: var(--measure); margin: 0 auto; padding: 3rem 0 4rem; }
+.back { font-size: 1rem; font-style: italic; }
+.top { text-align: center; margin: 2rem 0 0; }
+.top .icon { width: 5.5rem; height: 5.5rem; border-radius: 22%; margin: 0 auto 1.2rem; box-shadow: 0 1px 6px rgba(59, 47, 36, .15); }
+h1 { margin: 0; font-weight: 400; font-size: 1.5rem; letter-spacing: 0.22em; text-transform: uppercase; }
+.top .sub { margin: 0.4rem 0 0; font-style: italic; color: var(--quiet); }
+.top .what { margin: 1.4rem auto 0; max-width: 28rem; text-wrap: balance; }
+.top .soon { margin-top: 1rem; font-style: italic; color: var(--accent); }
+.points { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.6rem; margin: 2.6rem 0 0; }
+.point img { width: 100%; max-width: 12rem; margin: 0 auto; border-radius: 12px; border: 1px solid var(--rule); box-shadow: 0 1px 6px rgba(59, 47, 36, .08); }
+.point h2 { margin: 1rem 0 0.3rem; font-weight: 400; font-size: 1.15rem; font-style: italic; text-align: center; }
+.point p { margin: 0; text-align: center; font-size: 1.05rem; line-height: 1.45; color: var(--ink); text-wrap: balance; }
+@media (max-width: 640px) {
+  .points { grid-template-columns: 1fr; gap: 1.8rem; }
+  .point { display: grid; grid-template-columns: 42% 1fr; gap: 1.1rem; align-items: center; }
+  .point img { max-width: none; }
+  .point h2, .point p { text-align: left; }
+  .point h2 { margin-top: 0; }
+}
+.small { margin-top: 2.6rem; text-align: center; font-style: italic; color: var(--quiet); text-wrap: balance; }
+footer { margin-top: 3rem; padding-top: 1.4rem; border-top: 1px solid var(--rule); text-align: center; font-size: 1.05rem; }
+footer .sep { color: var(--rule); margin: 0 0.4em; }
+footer a { white-space: nowrap; }
+</style>
+</head>
+<body>
+<div class="doc">
+  <a class="back" href="/">← Adam Clements</a>
+
+  <header class="top">
+    <img class="icon" src="icon.png" alt="" width="88" height="88">
+    <h1>Whereabouts</h1>
+    <p class="sub">Daily Timeline, for Android</p>
+    <p class="what">Where you went and how, all day with nothing to press, and each day as a line of circles.</p>
+    <p class="soon">Coming soon to Google Play</p>
+  </header>
+
+  <div class="points">
+    <section class="point">
+      <img src="screen-1.webp" alt="A day in York: home, a run, a café with Priya, York Minster, each a circle on a line" width="540" height="1170">
+      <div><h2>It makes itself</h2><p>A circle for every place you stopped, sized by how long, and a line for each journey.</p></div>
+    </section>
+    <section class="point">
+      <img src="screen-2.webp" alt="The end of today: photos at Museum Gardens, and now at The Golden Fleece with Tom" width="540" height="1170">
+      <div><h2>Photos and people</h2><p>The photos you took, where you took them, and who you were with.</p></div>
+    </section>
+    <section class="point">
+      <img src="screen-3.webp" alt="October's calendar: small coloured circles for the places of each day" width="540" height="1170">
+      <div><h2>A month at a glance</h2><p>Each day's places as small circles, in the colour of what they are.</p></div>
+    </section>
+  </div>
+
+  <p class="small">Your days stay on your phone. Place names for Great Britain come with the app. No adverts, no accounts. Pay once.</p>
+
+  <footer><a href="/">Adam Clements</a><span class="sep">·</span><a href="privacy.html">Privacy policy</a><span class="sep">·</span><a href="mailto:adam.clements@gmail.com">adam.clements@gmail.com</a></footer>
+</div>
+</body>
+</html>

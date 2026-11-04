@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Whereabouts – Privacy policy</title>
+<style>
+  body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; max-width: 640px;
+         margin: 40px auto; padding: 0 16px; line-height: 1.6; color: #222; background: #fff; }
+  h1 { font-size: 1.6em; }
+  h2 { font-size: 1.15em; margin-top: 1.8em; }
+</style>
+</head>
+<body>
+<h1>Whereabouts: privacy policy</h1>
+<p>Last updated 4 November 2026.</p>
+<p>Whereabouts (the Android app <code>uk.adamclements.whereabouts</code>) records where you go and how you get
+there, all day, and shows each day as a timeline. This page says what it reads, what it keeps and the one thing
+it sends.</p>
+
+<h2>Your days stay on your phone</h2>
+<ul>
+  <li><b>Location, including in the background.</b> Whereabouts collects your location (GPS while you're moving,
+      the phone's network location while you're still) even when the app is closed or not in use. That's how it
+      records the places you go and the journeys between them without you pressing anything.</li>
+  <li><b>Steps.</b> With the Physical activity permission it reads the phone's step counter, to tell walking from
+      running and to notice when you set off.</li>
+  <li><b>Nearby devices.</b> If you allow it, every 5 minutes it listens for 10 seconds for Bluetooth devices
+      nearby (watches and earbuds), so it can show who you were with. It keeps the devices' addresses and names
+      and where they were seen. Strangers' phones, whose addresses change every few minutes, are deleted after a
+      day.</li>
+  <li><b>Your photos (optional).</b> If you allow it, it reads when your photos were taken, to put them on your
+      days, and shows small thumbnails of them. It only reads them and never changes them. A small copy of one
+      of your photos may be kept as a place's picture. On Android 14 and later you can allow just some photos.</li>
+  <li><b>Place names</b> (cafés, pubs, shops, stations and villages in Great Britain, from OpenStreetMap and
+      Overture Maps) come with the app and are looked up on the phone.</li>
+  <li>All of this, and the names, notes and people you add, is kept only in the app's own storage on your
+      phone. It is never sold, never used for adverts and never sent to us: Whereabouts has no server.</li>
+  <li>It is left out of Android's cloud backup. Android's phone-to-phone transfer, when you move to a new
+      phone, can copy it across. Settings has Forget a day and Forget everything; uninstalling the app or
+      clearing its data removes it all.</li>
+</ul>
+
+<h2>The one thing that leaves the phone: pictures of places</h2>
+<p>When you've named a place and none of your photos from there can stand for it, Whereabouts asks Wikimedia for
+a picture of it (when it's named, and again later if none was found). It sends the place's name and its position, rounded to about 100 metres, to Wikidata's query
+service (<code>query.wikidata.org</code>) and the Wikimedia Commons API (<code>commons.wikimedia.org</code>), over
+HTTPS, and fetches the picture from <code>upload.wikimedia.org</code>.</p>
+<ul>
+  <li>It never asks about your home, about Home or Work if you haven't given them a name, or about a place you've
+      marked as someone's home. (A named Work place is looked up like any other.)</li>
+  <li>It sends no account, no ID and nothing else about you. Each request says it comes from Whereabouts and
+      its version, with Whereabouts' contact address, as Wikimedia asks of apps. Like any request on the internet, Wikimedia sees
+      your phone's IP address; its handling of that is covered by the
+      <a href="https://foundation.wikimedia.org/wiki/Policy:Privacy_policy">Wikimedia Foundation's privacy
+      policy</a>.</li>
+  <li>The answer is kept on the phone; a place that had no picture isn't asked about again for 30 days.</li>
+  <li>You can turn it off: Settings, "Photos of places from the web". Then nothing leaves the phone at all.</li>
+</ul>
+
+<h2>What Whereabouts doesn't do</h2>
+<ul>
+  <li>No adverts, no analytics, no crash reporting, no accounts, no sign-in.</li>
+  <li>Nothing is sold or shared with anyone, apart from the picture requests to Wikimedia above.</li>
+</ul>
+
+<h2>Permissions</h2>
+<ul>
+  <li><b>Location, all the time:</b> to record your day in the background.</li>
+  <li><b>Physical activity:</b> steps, to tell a walk from a run.</li>
+  <li><b>Nearby devices (optional):</b> the Bluetooth scans for who you're with.</li>
+  <li><b>Photos (optional):</b> to put your photos on your days. You can allow only some.</li>
+  <li><b>Notifications:</b> the quiet notification Android needs while it records.</li>
+  <li><b>Run at start-up:</b> so recording carries on after the phone restarts.</li>
+  <li><b>Internet:</b> only for the pictures of places above.</li>
+</ul>
+
+<p>Questions: Adam Clements, <a href="mailto:adam.clements@gmail.com">adam.clements@gmail.com</a>.</p>
+</body>
+</html>
