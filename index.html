@@ -106,7 +106,7 @@ footer .sep { color: var(--rule); margin: 0 0.45em; }
   <h1>Adam Clements</h1>
   <p class="sub">Engineering and product leader</p>
   <nav aria-label="Contents">
-    <a href="#perfect-day">Perfect Day</a> <span class="sep">·</span> <a href="#glance">Glance</a> <span class="sep">·</span> <a href="#freecell">FreeCell</a> <span class="sep">·</span> <a href="#tabula-rasa">Tabula Rasa</a> <span class="sep">·</span> <a href="#work">Work</a>
+    <a href="#perfect-day">Perfect Day</a> <span class="sep">·</span> <a href="#glance">Glance</a> <span class="sep">·</span> <a href="#whereabouts">Whereabouts</a> <span class="sep">·</span> <a href="#freecell">FreeCell</a> <span class="sep">·</span> <a href="#tabula-rasa">Tabula Rasa</a> <span class="sep">·</span> <a href="#work">Work</a>
   </nav>
 </header>
 
@@ -133,6 +133,19 @@ footer .sep { color: var(--rule); margin: 0 0.45em; }
     <p class="on">Coming soon to Google Play · <a href="/glance/">more about Glance</a></p>
   </section>
 
+  <section class="page" id="whereabouts">
+    <h2>Whereabouts<small>for Android</small></h2>
+    <p class="lead">A journal of the places you go. It records your day with nothing to press and shows it as a line of circles, with your photos at the places you took them. Your data stays on your phone.</p>
+    <figure>
+      <div class="phones">
+        <img src="/whereabouts/screen-3.webp" alt="Whereabouts: a month of places as small coloured circles" width="540" height="1170" loading="lazy">
+        <img src="/whereabouts/screen-1.webp" alt="Whereabouts: a day in York as circles on a line" width="540" height="1170" loading="lazy">
+        <img src="/whereabouts/screen-2.webp" alt="Whereabouts: photos on the day, at the places they were taken" width="540" height="1170" loading="lazy">
+      </div>
+    </figure>
+    <p class="on">Coming soon to Google Play · <a href="/whereabouts/">more about Whereabouts</a></p>
+  </section>
+
   <section class="page" id="freecell">
     <h2>FreeCell<small>for Android</small></h2>
     <p class="lead">Classic FreeCell solitaire with no adverts, no tracking and no internet access. The 32,000 numbered deals, and undo back to the start.</p>
@@ -146,8 +159,8 @@ footer .sep { color: var(--rule); margin: 0 0.45em; }
   </section>
 
   <section class="page" id="tabula-rasa">
-    <h2>Tabula Rasa<small>a game, unfinished</small></h2>
-    <p class="lead">A real-time strategy game where you program your units instead of commanding them. Each runs its own virtual machine; you win by writing code that coordinates them. Work in progress.</p>
+    <h2>Tabula Rasa<small>a game, teaser trailer</small></h2>
+    <p class="lead">A real-time strategy game where you program your units instead of commanding them. Each runs its own virtual machine; you win by writing code that coordinates them.</p>
     <figure class="pic">
       <img src="/img/tabula.webp" alt="The Tabula Rasa teaser: an old terminal in the ruins, its green menu offering Transmissions, the Operator’s Manual and the software" width="1140" height="760" loading="lazy">
     </figure>
@@ -179,7 +192,7 @@ footer .sep { color: var(--rule); margin: 0 0.45em; }
   var pages = [].slice.call(document.querySelectorAll('.page'));
   if (!pages.length) return;
   var still = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var busyUntil = 0, wheelSum = 0, lastWheel = 0, touch = null;
+  var busyUntil = 0, wheelSum = 0, lastWheel = 0, lastDelta = 0, touch = null;
   function now() { return performance.now(); }
   function current() {
     var y = scrollY, best = 0;
@@ -206,8 +219,17 @@ footer .sep { color: var(--rule); margin: 0 0.45em; }
     if (e.ctrlKey) return;  // pinch-zoom on a trackpad
     e.preventDefault();
     var t = now(), quiet = t - lastWheel > 220;
+    var delta = Math.abs(e.deltaMode === 1 ? e.deltaY * 16 : e.deltaY);
+    // A trackpad's momentum only dies away, so a delta that jumps up is a new flick, not the old one coasting.
+    var fresh = quiet || delta > lastDelta * 1.6 + 4;
     lastWheel = t;
-    if (t < busyUntil) { busyUntil = Math.max(busyUntil, t + 120); wheelSum = 0; return; }
+    lastDelta = delta;
+    if (t < busyUntil) {
+      wheelSum = 0;
+      if (!fresh) { busyUntil = Math.max(busyUntil, t + 120); return; }
+      if (t < busyUntil - 400) return;
+      busyUntil = 0;
+    }
     if (quiet) wheelSum = 0;
     wheelSum += e.deltaMode === 1 ? e.deltaY * 16 : e.deltaY;
     if (Math.abs(wheelSum) >= 12) { move(wheelSum > 0 ? 1 : -1); wheelSum = 0; }
@@ -217,13 +239,14 @@ footer .sep { color: var(--rule); margin: 0 0.45em; }
     touch = e.touches.length === 1 ? { y: e.touches[0].clientY, x: e.touches[0].clientX, t: now() } : null;
   }, { passive: true });
   addEventListener('touchmove', function (e) {
-    if (touch && e.touches.length === 1) e.preventDefault(); else touch = null;
+    if (!touch || e.touches.length !== 1) { touch = null; return; }
+    e.preventDefault();
+    // Move as soon as the swipe is clear, not when the finger lifts.
+    var c = e.touches[0], dy = touch.y - c.clientY, dx = touch.x - c.clientX;
+    if (Math.abs(dy) > 24 && Math.abs(dy) > Math.abs(dx)) { touch = null; move(dy > 0 ? 1 : -1); }
   }, { passive: false });
   addEventListener('touchend', function (e) {
-    if (!touch) return;
-    var c = e.changedTouches[0], dy = touch.y - c.clientY, dx = touch.x - c.clientX;
     touch = null;
-    if (Math.abs(dy) > 24 && Math.abs(dy) > Math.abs(dx)) move(dy > 0 ? 1 : -1);
   });
 
   addEventListener('keydown', function (e) {
