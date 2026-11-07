@@ -9,14 +9,15 @@
          margin: 40px auto; padding: 0 16px; line-height: 1.6; color: #222; background: #fff; }
   h1 { font-size: 1.6em; }
   h2 { font-size: 1.15em; margin-top: 1.8em; }
+  h3 { font-size: 1em; margin-top: 1.4em; }
 </style>
 </head>
 <body>
 <h1>Whereabouts: privacy policy</h1>
-<p>Last updated 6 November 2026.</p>
+<p>Last updated 7 November 2026.</p>
 <p>Whereabouts (the Android app <code>uk.adamclements.whereabouts</code>) records where you go and how you get
-there, all day, and shows each day as a timeline. This page says what it reads, what it keeps and the one thing
-it can send, only if you turn it on.</p>
+there, all day, and shows each day as a timeline and on a map. This page says what it reads, what it keeps and what it
+asks for over the internet.</p>
 
 <h2>Your data stays on your phone</h2>
 <ul>
@@ -25,9 +26,12 @@ it can send, only if you turn it on.</p>
       records the places you go and the journeys between them without you pressing anything.</li>
   <li><b>Steps.</b> With the Physical activity permission it reads the phone's step counter, to tell walking from
       running and to notice when you set off.</li>
-  <li><b>Your photos and videos (optional).</b> If you allow it, it reads when your photos and videos were taken, to put them on your timeline, and shows them in the app: thumbnails on the timeline, and full size, or playing, when you tap one. It only reads them and never changes them. A small copy of one of your photos may be kept as a place's picture (never a video). It matches them by the time they were taken and doesn't read the location saved in them. On Android 14 and later you can allow just some.</li>
+  <li><b>Your photos and videos (optional).</b> If you allow it, it reads when your photos and videos were taken, to put them on your timeline, and shows them in the app: thumbnails on the timeline, and full size, or playing, when you tap one. It only reads them and never changes them. A small copy of one
+      of your photos may be kept as a place's picture (never a video). It matches them by the time they were taken and doesn't read the location saved in them. On Android 14 and later you can allow just some.</li>
   <li><b>Place names</b> (cafés, pubs, shops, stations and villages in Great Britain and France, from OpenStreetMap and
       Overture Maps) come with the app and are looked up on the phone.</li>
+  <li><b>Your trails.</b> The map of everywhere you've been is drawn on the phone from your own days. Your trails,
+      places and times are never sent anywhere.</li>
   <li>All of this, and the names and notes you add, is kept only in the app's own storage on your
       phone. It is never sold, never used for adverts and never sent to us: Whereabouts has no server.</li>
   <li>You can pause recording until the next morning, or turn it off until you turn it back on (Settings,
@@ -37,9 +41,25 @@ it can send, only if you turn it on.</p>
       clearing its data removes it all.</li>
 </ul>
 
-<h2>The one thing that can leave the phone, if you turn it on: pictures of places</h2>
+<h2>What goes over the internet</h2>
+
+<h3>Map squares, when you open the map</h3>
+<p>Only while the map is open, Whereabouts asks OpenStreetMap's tile server (<code>tile.openstreetmap.org</code>, over HTTPS) for the map squares you're viewing.
+That shows OpenStreetMap your phone's IP address and the area you're looking at, not your trails. The map opens on your own trails, so that area can include places you go.
+If you never open the map, it asks for nothing. If the squares can't be reached, the map carries on as plain paper.</p>
+<ul>
+  <li>Your trails, places, times and names are never sent. It sends no account and no ID. Each request says it comes from
+      Whereabouts and its version, with a link to Whereabouts' web page, as OpenStreetMap asks of apps.</li>
+  <li>The OpenStreetMap Foundation's handling of requests is covered by its
+      <a href="https://osmfoundation.org/wiki/Privacy_Policy">privacy policy</a>.</li>
+  <li>Only the squares on screen are asked for. Those fetched are kept in the app's cache on the phone (at most about 100 MB).
+      Forget everything deletes them.</li>
+  <li>The map's small links, the credit and "Report a map issue", open OpenStreetMap's pages in your browser, if you tap them.</li>
+</ul>
+
+<h3>Pictures of places</h3>
 <p>This is off unless you turn it on (in set-up, in a place's "Photo for…" sheet, or in Settings,
-"Photos of places from the web"). With it off, nothing leaves the phone at all.</p>
+"Photos of places from the web"). With it off, and the map not open, nothing leaves the phone at all.</p>
 <p>With it on, when you've named a place and none of your photos from there can stand for it, Whereabouts asks Wikimedia for
 a picture of it (when it's named, and again later if none was found). It sends the place's name and its position, rounded to about 100 metres, to Wikidata's query
 service (<code>query.wikidata.org</code>) and the Wikimedia Commons API (<code>commons.wikimedia.org</code>), over
@@ -52,16 +72,16 @@ HTTPS, and fetches the picture from <code>thumb.wikimedia.org</code> or <code>up
       your phone's IP address; its handling of that is covered by the
       <a href="https://foundation.wikimedia.org/wiki/Policy:Privacy_policy">Wikimedia Foundation's privacy
       policy</a>.</li>
-  <li>A web picture's credit opens the picture's page on Wikimedia Commons (or its licence) in your browser, if you tap it.</li>
   <li>The answer is kept on the phone; a place that had no picture isn't asked about again for 30 days.</li>
   <li>A name the app only guessed is never sent: only names you've given.</li>
+  <li>A web picture's credit opens the picture's page on Wikimedia Commons (or its licence) in your browser, if you tap it.</li>
   <li>You can turn it off again at any time: Settings, "Photos of places from the web".</li>
 </ul>
 
 <h2>What Whereabouts doesn't do</h2>
 <ul>
   <li>No adverts, no analytics, no crash reporting, no accounts, no sign-in.</li>
-  <li>Nothing is sold or shared with anyone, apart from the picture requests to Wikimedia above, if you turn them on.</li>
+  <li>Nothing is sold or shared with anyone, apart from the map square requests to OpenStreetMap above (when you open the map) and the picture requests to Wikimedia above (if you turn them on).</li>
 </ul>
 
 <h2>Permissions</h2>
@@ -71,7 +91,7 @@ HTTPS, and fetches the picture from <code>thumb.wikimedia.org</code> or <code>up
   <li><b>Photos and videos (optional):</b> to put your photos and videos on your timeline and show them in the app. You can allow only some.</li>
   <li><b>Notifications:</b> the quiet notification Android needs while it records.</li>
   <li><b>Run at start-up:</b> so recording carries on after the phone restarts.</li>
-  <li><b>Internet:</b> only for the pictures of places above, if you turn them on.</li>
+  <li><b>Internet:</b> only for the map squares above, when you open the map, and the pictures of places above, if you turn them on.</li>
 </ul>
 
 <p>Questions: Adam Clements, <a href="mailto:adam.clements@gmail.com">adam.clements@gmail.com</a>.</p>
